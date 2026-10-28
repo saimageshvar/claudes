@@ -1,0 +1,50 @@
+  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                                                                                   
+                                                                                                                                            
+ ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ 
+ │ ❯ search title, folder, branch, or anything said                                                                                 9 / 9 │ 
+ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ 
+                                                                                                                                            
+  Today ──────────────────────────────────────────────────────   ╭─ preview ──────────────────────────────────────────────────────────────╮ 
+ ▌ ● Fix token refresh race in auth middleware          2m ago   │ Fix token refresh race in auth middleware                              │ 
+ ▌    chronus-api  feat/auth-refresh  wt auth-refresh  48 msgs   │                                                                        │ 
+                                                                 │  chronus-api  feat/auth-refresh  wt auth-refresh                       │ 
+   ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refresh                              │ 
+      chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 07:12                                    │ 
+                                                                 │                                                                        │ 
+   ● Archie chat: streaming render jank                 1h ago   │ how it started ─────────────────────────────────────────────────────── │ 
+      chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │ ▎ you                                                                  │ 
+                                                                 │ ▎ Users get logged out when two tabs refresh at the same time. Find    │ 
+   ● Write fuzzy-search TUI spec                        3h ago   │ ▎ out why the refresh token is reused and fix it without changing the  │ 
+      claudes                                          19 msgs   │ ▎ session cookie format.                                               │ 
+                                                                 │ ▎ claude                                                               │ 
+   ● Investigate flaky e2e: program-join.spec           5h ago   │ ▎ Reproduced it: both tabs call refresh() within the same tick and the │ 
+      chronus-web  test/stabilize-e2e [primary]        64 msgs   │ ▎ second one sends the already-rotated token. Next I will look at how  │ 
+  Yesterday ──────────────────────────────────────────────────   │ ▎ the refresh promise is cached.                                       │ 
+   ● Terraform: bump RDS to 16                          1d ago   │ where you left off ─────────────────────────────────────────────────── │ 
+      prod  main                                       33 msgs   │ ▎ you                                                                  │ 
+                                                                 │ ▎ Why does the second request still send the old token?                │ 
+   ● Explain webhook retry backoff                      1d ago   │ ▎ claude                                                               │ 
+      chronus-api  main [primary]                        1 msg   │ ▎ The refresh promise is not shared, so two callers race. I memoized   │ 
+  This week ──────────────────────────────────────────────────   │ ▎ it per session and added a regression test; all auth specs pass.     │ 
+   ● Review PR 2841: mentor availability with a delib…  4d ago   │                                                                        │ 
+      chronus-web  feat/availability-and-a-very-long-… 41 msgs   │                                                                        │ 
+  Older ──────────────────────────────────────────────────────   │                                                                        │ 
+   ● Old notes                                          5w ago   │                                                                        │ 
+      notes                                             3 msgs   │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │ touched src/auth/middleware.ts  src/auth/refresh.ts +1                 │ 
+                                                                 │                                                                        │ 
+                                                                 │ resume ─────────────────────────────────────────────────────────────── │ 
+                                                                 │  cd ~/code/chronus-api.worktrees/auth-refresh                          │ 
+                                                                 │  claude --resume 7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f                  │ 
+                                                                 ╰────────────────────────────────────────────────────────────────────────╯ 
+                                                                                                                                            
+  ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit                                                 1–9 of 9 

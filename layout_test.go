@@ -36,12 +36,18 @@ func fixtures() []Session {
 		return Session{ID: id, Title: title, Cwd: cwd, Branch: branch, gitInfo: g, Updated: ago(upd), Started: ago(upd + 2*time.Hour),
 			Msgs: n, LastPrompt: prompt, LastReply: reply, Files: files}
 	}
+	first := func(s Session, prompt, reply string) Session {
+		s.FirstText, s.FirstReply = prompt, reply
+		return s
+	}
 	return []Session{
-		mk("7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f", "Fix token refresh race in auth middleware", "/home/u/code/chronus-api.worktrees/auth-refresh", "feat/auth-refresh",
+		first(mk("7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f", "Fix token refresh race in auth middleware", "/home/u/code/chronus-api.worktrees/auth-refresh", "feat/auth-refresh",
 			gitInfo{Repo: "chronus-api", Linked: "auth-refresh"}, 2*time.Minute, 48,
 			"Why does the second request still send the old token?",
 			"The refresh promise is not shared, so two callers race. I memoized it per session and added a regression test; all auth specs pass.",
 			"/home/u/code/chronus-api.worktrees/auth-refresh/src/auth/middleware.ts", "/home/u/code/chronus-api.worktrees/auth-refresh/src/auth/refresh.ts", "/home/u/code/chronus-api.worktrees/auth-refresh/test/auth.spec.ts"),
+			"Users get logged out when two tabs refresh at the same time. Find out why the refresh token is reused and fix it without changing the session cookie format.",
+			"Reproduced it: both tabs call refresh() within the same tick and the second one sends the already-rotated token. Next I will look at how the refresh promise is cached."),
 		mk("11111111-2222-3333-4444-555555555555", "Migrate mentoring-match job to queue workers", "/home/u/code/chronus-api", "main", gitInfo{Repo: "chronus-api", Primary: true}, 41*time.Minute, 112, "Move it to the queue.", "Done."),
 		mk("22222222-2222-3333-4444-555555555555", "Archie chat: streaming render jank", "/home/u/code/chronus-web.worktrees/chat-stream", "fix/chat-stream", gitInfo{Repo: "chronus-web", Linked: "chat-stream"}, 1*time.Hour+5*time.Minute, 27, "Why does it jank?", "Re-render per token."),
 		mk("3d5e88b2-1c4f-4a6b-b9e0-4d5c6b7a8f90", "Write fuzzy-search TUI spec", "/home/u/scratch/claudes", "", gitInfo{Repo: "claudes", NoGit: true}, 3*time.Hour, 19, "Sketch the list and preview layout.", "Two-line rows with a preview pane and a help bar at the bottom. I wrote it up in SPEC.md.", "/home/u/scratch/claudes/SPEC.md"),
@@ -122,6 +128,7 @@ func TestLayout(t *testing.T) {
 		{name: "w140_preview_off", w: 140, h: 30, keys: []string{"ctrl+p"}},
 		{name: "w110_page2", w: 110, h: 30, keys: []string{"pgdown"}},
 		{name: "w110_short", w: 110, h: 16},
+		{name: "w140_tall", w: 140, h: 50},
 		{name: "w140_resuming", w: 140, h: 30, keys: []string{"enter"}},
 	} {
 		t.Run(c.name, func(t *testing.T) {

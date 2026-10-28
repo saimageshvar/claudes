@@ -11,14 +11,14 @@
                                                                  │ ~/code/chronus-api.worktrees/auth-refresh                              │ 
                                                                  │ 48 msgs · started Wed Oct 28, 07:12                                    │ 
                                                                  │                                                                        │ 
-                                                                 │ conversation ───────────────────────────────────────────────────────── │ 
+                                                                 │ how it started ─────────────────────────────────────────────────────── │ 
+                                                                 │ ▎ you                                                                  │ 
+                                                                 │ ▎ Users get logged out when two tabs refresh at the same time. Find…   │ 
+                                                                 │ where you left off ─────────────────────────────────────────────────── │ 
                                                                  │ ▎ you                                                                  │ 
                                                                  │ ▎ Why does the second request still send the old token?                │ 
-                                                                 │ ▎                                                                      │ 
                                                                  │ ▎ claude                                                               │ 
-                                                                 │ ▎ The refresh promise is not shared, so two callers race. I memoized   │ 
-                                                                 │ ▎ it per session and added a regression test; all auth specs pass.     │ 
-                                                                 │ ▎                                                                      │ 
+                                                                 │ ▎ The refresh promise is not shared, so two callers race. I memoized…  │ 
                                                                  │                                                                        │ 
                                                                  │ touched src/auth/middleware.ts  src/auth/refresh.ts +1                 │ 
                                                                  │                                                                        │ 

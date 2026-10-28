@@ -58,8 +58,120 @@ func wrap(s string, w, n int) []string {
 	return out
 }
 
-// previewLines is the card interior, each line exactly w cells with the card background on every cell.
-func previewLines(s *Session, w int) []string {
+type exchange struct {
+	rule        string
+	prompt, rep string
+}
+
+type pvBlock struct {
+	label string
+	st    lipgloss.Style
+	text  []string // fully wrapped
+	n     int      // lines granted
+}
+
+// conversation lays out how the session started and where it was left off in exactly budget rows,
+// giving spare rows to the latest exchange first.
+func conversation(s *Session, tw, budget int, row func([]span) string, rule func(string, lipgloss.Style) string) []string {
+	ex := []exchange{{"conversation", s.LastPrompt, s.LastReply}}
+	if s.FirstText != "" && clean(s.FirstText) != clean(s.LastPrompt) {
+		ex = []exchange{{"how it started", s.FirstText, s.FirstReply}, {"where you left off", s.LastPrompt, s.LastReply}}
+	}
+	// A block costs its label row plus its granted lines; n == 0 hides it. The first exchange starts with just its
+	// prompt so both exchanges fit a 30-row terminal.
+	cost := func(b *pvBlock) int {
+		if b.n == 0 {
+			return 0
+		}
+		return 1 + b.n
+	}
+	build := func(ex []exchange) ([][]*pvBlock, int) {
+		var groups [][]*pvBlock
+		used := 0
+		for ei, e := range ex {
+			var g []*pvBlock
+			for bi, b := range []struct {
+				label, text string
+				st          lipgloss.Style
+			}{{"you", e.prompt, sCyan}, {"claude", e.rep, sPink}} {
+				if t := clean(b.text); t != "" {
+					n := 1
+					if len(ex) == 2 && ei == 0 && bi == 1 {
+						n = 0
+					}
+					g = append(g, &pvBlock{label: b.label, st: b.st, text: wrap(t, tw-2, 1<<20), n: n})
+				}
+			}
+			used++ // rule
+			for _, b := range g {
+				used += cost(b)
+			}
+			groups = append(groups, g)
+		}
+		return groups, used
+	}
+	groups, used := build(ex)
+	if used > budget && len(ex) == 2 {
+		ex = ex[1:]
+		groups, used = build(ex)
+	}
+	spare := budget - used
+	// Round-robin, newest first: where you left off (claude, you), then how it started (you, claude).
+	var order []*pvBlock
+	for gi := len(groups) - 1; gi >= 0; gi-- {
+		g := groups[gi]
+		if gi == len(groups)-1 {
+			for bi := len(g) - 1; bi >= 0; bi-- {
+				order = append(order, g[bi])
+			}
+		} else {
+			order = append(order, g...)
+		}
+	}
+	for spare > 0 {
+		gave := false
+		for _, b := range order {
+			need := 1
+			if b.n == 0 {
+				need = 2 // a hidden block also needs its label row
+			}
+			if spare >= need && b.n < len(b.text) {
+				b.n++
+				spare -= need
+				gave = true
+			}
+		}
+		if !gave {
+			break
+		}
+	}
+	var out []string
+	for gi, e := range ex {
+		out = append(out, rule(e.rule, sCyan))
+		for _, b := range groups[gi] {
+			if b.n == 0 {
+				continue
+			}
+			out = append(out, row([]span{sp("▎ ", b.st), sp(b.label, b.st.Bold(true))}))
+			ls := b.text[:min(b.n, len(b.text))]
+			if b.n < len(b.text) {
+				last := ls[len(ls)-1]
+				ls = append(ls[:len(ls)-1:len(ls)-1], runewidth.Truncate(last, tw-3, "")+"…")
+			}
+			for _, t := range ls {
+				out = append(out, row([]span{sp("▎ ", b.st), sp(t, sFg)}))
+			}
+		}
+	}
+	for len(out) < budget {
+		out = append(out, row(nil))
+	}
+	return out[:max(min(len(out), budget), 0)]
+}
+
+// previewLines is the card interior: header at the top, files and the resume command pinned to the bottom,
+// the conversation filling every row between; each line is exactly w cells on the card background.
+func previewLines(s *Session, w, h int) []string {
 	bg := cCardBg
 	tw := w - 2
 	row := func(left []span) string { return pad(1, bg) + line(tw, bg, left, nil) + pad(1, bg) }
@@ -85,21 +197,9 @@ func previewLines(s *Session, w int) []string {
 	out = append(out, row(tags(s)))
 	out = append(out, row([]span{sp(short(s.Cwd), sDim)}))
 	out = append(out, row([]span{sp(msgs(s.Msgs), sFg), sp(" · ", sDim), sp("started ", sDim), sp(s.Started.Local().Format("Mon Jan 2, 15:04"), sFg)}))
-	out = append(out, blank, rule("conversation", sCyan))
-
-	block := func(label string, st lipgloss.Style, text string, n int) {
-		out = append(out, row([]span{sp("▎ ", st), sp(label, st.Bold(true))}))
-		ls := wrap(clean(text), tw-2, n)
-		for i := 0; i < n; i++ {
-			t := ""
-			if i < len(ls) {
-				t = ls[i]
-			}
-			out = append(out, row([]span{sp("▎ ", st), sp(t, sFg)}))
-		}
-	}
-	block("you", sCyan, s.LastPrompt, 2)
-	block("claude", sPink, s.LastReply, 3)
+	out = append(out, blank)
+	const bottomRows = 6 // blank, touched, blank, resume rule, 2 code lines
+	out = append(out, conversation(s, tw, max(h-len(out)-bottomRows, 0), row, rule)...)
 	out = append(out, blank)
 
 	touched := []span{sp("touched ", sDim)}

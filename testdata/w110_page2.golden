@@ -4,27 +4,27 @@
  │ ❯ search title, folder, branch, or anything said                                                   9 / 9 │ 
  ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯ 
                                                                                                               
-  Yesterday ──────────────────────────────────────────────────   ╭─ preview ────────────────────────────────╮ 
- ▌ ● Explain webhook retry backoff                      1d ago   │ Explain webhook retry backoff            │ 
- ▌    chronus-api  main [primary]                        1 msg   │                                          │ 
-  This week ──────────────────────────────────────────────────   │  chronus-api  main [primary]             │ 
-   ● Review PR 2841: mentor availability with a delib…  4d ago   │ ~/code/chronus-api                       │ 
-      chronus-web  feat/availability-and-a-very-long-… 41 msgs   │ 1 msg · started Tue Oct 27, 01:14        │ 
-  Older ──────────────────────────────────────────────────────   │                                          │ 
-   ● Old notes                                          5w ago   │ conversation ─────────────────────────── │ 
-      notes                                             3 msgs   │ ▎ you                                    │ 
-                                                                 │ ▎                                        │ 
-                                                                 │ ▎                                        │ 
-                                                                 │ ▎ claude                                 │ 
-                                                                 │ ▎                                        │ 
-                                                                 │ ▎                                        │ 
-                                                                 │ ▎                                        │ 
+  This week ──────────────────────────────────────────────────   ╭─ preview ────────────────────────────────╮ 
+ ▌ ● Review PR 2841: mentor availability with a delib…  4d ago   │ Review PR 2841: mentor availability with │ 
+ ▌    chronus-web  feat/availability-and-a-very-long-… 41 msgs   │ a deliberately very long title that mus… │ 
+  Older ──────────────────────────────────────────────────────   │  chronus-web  feat/availability-and-a-v… │ 
+   ● Old notes                                          5w ago   │ ~/code/chronus-web.worktrees/pr-2841     │ 
+      notes                                             3 msgs   │ 41 msgs · started Sat Oct 24, 07:14      │ 
+                                                                 │                                          │ 
+                                                                 │ conversation ─────────────────────────── │ 
+                                                                 │                                          │ 
+                                                                 │                                          │ 
+                                                                 │                                          │ 
+                                                                 │                                          │ 
+                                                                 │                                          │ 
+                                                                 │                                          │ 
+                                                                 │                                          │ 
                                                                  │                                          │ 
                                                                  │ touched —                                │ 
                                                                  │                                          │ 
                                                                  │ resume ───────────────────────────────── │ 
-                                                                 │  cd ~/code/chronus-api                   │ 
-                                                                 │  claude --resume 66666666-2222-3333-444… │ 
+                                                                 │  cd ~/code/chronus-web.worktrees/pr-2841 │ 
+                                                                 │  claude --resume 77777777-2222-3333-444… │ 
                                                                  ╰──────────────────────────────────────────╯ 
                                                                                                               
-  ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit               ○ ● 7–9 of 9 
+  ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit               ○ ● 8–9 of 9 

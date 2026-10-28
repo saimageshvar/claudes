@@ -230,7 +230,8 @@ func parseSession(path string, info os.FileInfo) *Session {
 		}
 	}
 	lastHuman(head, true)
-	headPrompt := s.LastPrompt
+	headPrompt, firstReply := s.LastPrompt, s.FirstReply
+	defer func() { s.FirstReply = firstReply }() // a later window's reply is not how the session started
 	s.LastPrompt = ""
 	lastHuman(tail, false)
 	// Big tool results (images, logs) can fill the tail window; walk back until the latest human prompt shows up.
@@ -346,7 +347,7 @@ type index struct {
 
 func cachePath() string {
 	d, _ := os.UserCacheDir()
-	return filepath.Join(d, "claudes", "index-v4.json")
+	return filepath.Join(d, "claudes", "index-v5.json")
 }
 
 func keep(s *Session) bool {

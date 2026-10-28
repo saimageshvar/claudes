@@ -112,8 +112,7 @@ func (m *model) listW() int {
 func (m *model) cardW() int { return m.w - 2 - listWW - gapW }
 
 func (m *model) layout() {
-	per := min(perPage, max(m.bodyH()/rowH, 1))
-	m.list.SetSize(m.listW(), per*rowH)
+	m.list.SetSize(m.listW(), max(m.bodyH()/rowH, 1)*rowH)
 	m.vp.Width = max(m.cardW()-2, 1)
 	m.vp.Height = max(m.bodyH()-2, 1)
 	m.refreshPreview()
@@ -173,7 +172,7 @@ func (m *model) selected() *Session {
 }
 
 func (m *model) refreshPreview() {
-	lines := previewLines(m.selected(), m.vp.Width)
+	lines := previewLines(m.selected(), m.vp.Width, m.vp.Height)
 	for len(lines) < m.vp.Height {
 		lines = append(lines, pad(m.vp.Width, cCardBg))
 	}

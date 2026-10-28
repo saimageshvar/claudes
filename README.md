@@ -4,7 +4,7 @@ A full-screen picker for Claude Code sessions. Find a session and press enter: `
 session's folder and replaces itself with `claude --resume <id>`, in the same pane or tab.
 
 Sessions come from `~/.claude/projects/*/*.jsonl`. Titles, folders, branches, worktree info and counts are
-cached in `~/Library/Caches/claudes/index-v4.json` (the OS cache dir), so launch is instant after the first run.
+cached in `~/Library/Caches/claudes/index-v5.json` (the OS cache dir), so launch is instant after the first run.
 
 ## Keys
 

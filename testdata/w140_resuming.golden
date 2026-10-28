@@ -11,20 +11,20 @@
    ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refresh                              │ 
       chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 07:12                                    │ 
                                                                  │                                                                        │ 
-   ● Archie chat: streaming render jank                 1h ago   │ conversation ───────────────────────────────────────────────────────── │ 
+   ● Archie chat: streaming render jank                 1h ago   │ how it started ─────────────────────────────────────────────────────── │ 
       chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │ ▎ you                                                                  │ 
+                                                                 │ ▎ Users get logged out when two tabs refresh at the same time. Find…   │ 
+   ● Write fuzzy-search TUI spec                        3h ago   │ where you left off ─────────────────────────────────────────────────── │ 
+      claudes                                          19 msgs   │ ▎ you                                                                  │ 
                                                                  │ ▎ Why does the second request still send the old token?                │ 
-   ● Write fuzzy-search TUI spec                        3h ago   │ ▎                                                                      │ 
-      claudes                                          19 msgs   │ ▎ claude                                                               │ 
-                                                                 │ ▎ The refresh promise is not shared, so two callers race. I memoized   │ 
-   ● Investigate flaky e2e: program-join.spec           5h ago   │ ▎ it per session and added a regression test; all auth specs pass.     │ 
-      chronus-web  test/stabilize-e2e [primary]        64 msgs   │ ▎                                                                      │ 
+   ● Investigate flaky e2e: program-join.spec           5h ago   │ ▎ claude                                                               │ 
+      chronus-web  test/stabilize-e2e [primary]        64 msgs   │ ▎ The refresh promise is not shared, so two callers race. I memoized…  │ 
   Yesterday ──────────────────────────────────────────────────   │                                                                        │ 
    ● Terraform: bump RDS to 16                          1d ago   │ touched src/auth/middleware.ts  src/auth/refresh.ts +1                 │ 
       prod  main                                       33 msgs   │                                                                        │ 
                                                                  │ resume ─────────────────────────────────────────────────────────────── │ 
-                                                                 │  cd ~/code/chronus-api.worktrees/auth-refresh                          │ 
-                                                                 │  claude --resume 7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f                  │ 
+   ● Explain webhook retry backoff                      1d ago   │  cd ~/code/chronus-api.worktrees/auth-refresh                          │ 
+      chronus-api  main [primary]                        1 msg   │  claude --resume 7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f                  │ 
                                                                  ╰────────────────────────────────────────────────────────────────────────╯ 
                                                                                                                                             
  ◐ resuming → cd ~/code/chronus-api.worktrees/auth-refresh && claude --resume 7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f                          

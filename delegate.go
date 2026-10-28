@@ -12,9 +12,8 @@ import (
 )
 
 const (
-	rowH    = 3 // header-or-blank slot + 2 text lines (query mode: 2 text lines + blank)
-	perPage = 6
-	timeW   = 7
+	rowH  = 3 // header-or-blank slot + 2 text lines (query mode: 2 text lines + blank)
+	timeW = 7
 )
 
 type item struct {
