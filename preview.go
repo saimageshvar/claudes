@@ -118,7 +118,9 @@ func previewLines(s *Session, w int) []string {
 	}
 	out = append(out, row(touched), blank, rule("resume", sGreen))
 
-	code := func(ss ...span) string { return pad(1, bg) + line(tw, cCodeBg, append([]span{sp(" ", sCode)}, ss...), nil) + pad(1, bg) }
+	code := func(ss ...span) string {
+		return pad(1, bg) + line(tw, cCodeBg, append([]span{sp(" ", sCode)}, ss...), nil) + pad(1, bg)
+	}
 	out = append(out,
 		code(sp("cd", sCodeCd), sp(" "+short(s.Cwd), sCode)),
 		code(sp("claude", sCodeCl), sp(" --resume", sCodeArg), sp(" "+s.ID, sCode)))
