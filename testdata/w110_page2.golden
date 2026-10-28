@@ -1,0 +1,30 @@
+  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                                                     
+                                                                                                              
+ ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────╮ 
+ │ ❯ search title, folder, branch, or anything said                                                   9 / 9 │ 
+ ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯ 
+                                                                                                              
+  Yesterday ──────────────────────────────────────────────────   ╭─ preview ────────────────────────────────╮ 
+ ▌ ● Explain webhook retry backoff                      1d ago   │ Explain webhook retry backoff            │ 
+ ▌    chronus-api  main [primary]                        1 msg   │                                          │ 
+  This week ──────────────────────────────────────────────────   │  chronus-api  main [primary]             │ 
+   ● Review PR 2841: mentor availability with a delib…  4d ago   │ ~/code/chronus-api                       │ 
+      chronus-web  feat/availability-and-a-very-long-… 41 msgs   │ 1 msg · started Tue Oct 27, 01:14        │ 
+  Older ──────────────────────────────────────────────────────   │                                          │ 
+   ● Old notes                                          5w ago   │ conversation ─────────────────────────── │ 
+      notes                                             3 msgs   │ ▎ you                                    │ 
+                                                                 │ ▎                                        │ 
+                                                                 │ ▎                                        │ 
+                                                                 │ ▎ claude                                 │ 
+                                                                 │ ▎                                        │ 
+                                                                 │ ▎                                        │ 
+                                                                 │ ▎                                        │ 
+                                                                 │                                          │ 
+                                                                 │ touched —                                │ 
+                                                                 │                                          │ 
+                                                                 │ resume ───────────────────────────────── │ 
+                                                                 │  cd ~/code/chronus-api                   │ 
+                                                                 │  claude --resume 66666666-2222-3333-444… │ 
+                                                                 ╰──────────────────────────────────────────╯ 
+                                                                                                              
+  ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit               ○ ● 7–9 of 9 

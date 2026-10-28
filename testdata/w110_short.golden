@@ -1,0 +1,16 @@
+  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                                                     
+                                                                                                              
+ ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────╮ 
+ │ ❯ search title, folder, branch, or anything said                                                   9 / 9 │ 
+ ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯ 
+                                                                                                              
+  Today ──────────────────────────────────────────────────────   ╭─ preview ────────────────────────────────╮ 
+ ▌ ● Fix token refresh race in auth middleware          2m ago   │ Fix token refresh race in auth           │ 
+ ▌    chronus-api  feat/auth-refresh  wt auth-refresh  48 msgs   │ middleware                               │ 
+                                                                 │  chronus-api  feat/auth-refresh  wt aut… │ 
+   ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refre… │ 
+      chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 07:12      │ 
+                                                                 │                                          │ 
+                                                                 ╰──────────────────────────────────────────╯ 
+                                                                                                              
+  ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit         ● ○ ○ ○ ○ 1–2 of 9 

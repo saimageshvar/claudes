@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -18,7 +19,26 @@ const (
 	tailBytes   = 1 << 20
 	maxLineJSON = 400 << 10
 	maxFiles    = 5
+	maxBackScan = 16 << 20
 )
+
+// readWindow returns the whole lines inside [start, end) of the file.
+func readWindow(path string, start, end int64) []byte {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	defer f.Close()
+	b := make([]byte, end-start)
+	if _, err := f.ReadAt(b, start); err != nil && err != io.EOF {
+		return nil
+	}
+	b = b[bytes.IndexByte(b, '\n')+1:]
+	if i := bytes.LastIndexByte(b, '\n'); i >= 0 {
+		b = b[:i+1]
+	}
+	return b
+}
 
 type Session struct {
 	ID         string
@@ -34,8 +54,17 @@ type Session struct {
 	Started    time.Time
 	Updated    time.Time
 	Msgs       int
-	Worktree   string
-	InTx       bool
+	InTx       bool `json:"-"`
+	gitInfo    `json:"-"`
+}
+
+// gitInfo is the per-cwd git view, cached in the index so launch stays instant.
+type gitInfo struct {
+	Repo    string // main checkout's folder name; the cwd's own name outside git
+	Linked  string // linked worktree name; "" for the main checkout
+	Primary bool   // main checkout of a repo that has linked worktrees
+	NoGit   bool   // the folder exists and is not a git repo
+	Checked int64
 }
 
 type cacheEntry struct {
@@ -58,6 +87,7 @@ type record struct {
 	} `json:"message"`
 	CustomTitle string `json:"customTitle"`
 	AITitle     string `json:"aiTitle"`
+	Summary     string `json:"summary"`
 }
 
 type block struct {
@@ -81,7 +111,18 @@ func blocks(raw json.RawMessage) []block {
 
 func isHumanText(t string) bool {
 	t = strings.TrimSpace(t)
-	return t != "" && !strings.HasPrefix(t, "<") && !strings.HasPrefix(t, "[Request interrupted") && !strings.HasPrefix(t, "Caveat:")
+	for _, p := range []string{"<", "[Request interrupted", "Caveat:", "Base directory for this skill:"} {
+		if strings.HasPrefix(t, p) {
+			return false
+		}
+	}
+	// Slash-command and skill echoes ("`/design` was invoked ...") make poor titles and previews.
+	return t != "" && !(strings.HasPrefix(t, "`/") && strings.Contains(firstLine(t), "invoked"))
+}
+
+func firstLine(s string) string {
+	s, _, _ = strings.Cut(s, "\n")
+	return s
 }
 
 func oneLine(s string, n int) string {
@@ -121,7 +162,7 @@ func parseSession(path string, info os.FileInfo) *Session {
 		return nil
 	}
 	s := &Session{ID: strings.TrimSuffix(filepath.Base(path), ".jsonl"), Path: path, Updated: info.ModTime()}
-	var customTitle, aiTitle string
+	var customTitle, aiTitle, summary string
 	var files []string
 	seenFile := map[string]bool{}
 	lastHuman := func(chunk []byte, isHead bool) {
@@ -136,6 +177,11 @@ func parseSession(path string, info os.FileInfo) *Session {
 				var r record
 				if json.Unmarshal(line, &r) == nil && r.AITitle != "" {
 					aiTitle = r.AITitle
+				}
+			case bytes.HasPrefix(line, []byte(`{"type":"summary"`)):
+				var r record
+				if json.Unmarshal(line, &r) == nil && r.Summary != "" {
+					summary = r.Summary
 				}
 			case bytes.HasPrefix(line, []byte(`{"parentUuid"`)) && len(line) < maxLineJSON:
 				var r record
@@ -184,7 +230,22 @@ func parseSession(path string, info os.FileInfo) *Session {
 		}
 	}
 	lastHuman(head, true)
+	headPrompt := s.LastPrompt
+	s.LastPrompt = ""
 	lastHuman(tail, false)
+	// Big tool results (images, logs) can fill the tail window; walk back until the latest human prompt shows up.
+	if tail != nil && s.LastPrompt == "" {
+		branch, reply := s.Branch, s.LastReply
+		for end, read := info.Size()-tailBytes, int64(0); end > headBytes && read < maxBackScan && s.LastPrompt == ""; end, read = end-tailBytes, read+tailBytes {
+			if chunk := readWindow(path, max(end-tailBytes, headBytes), end); chunk != nil {
+				lastHuman(chunk, false)
+			}
+		}
+		s.Branch, s.LastReply = branch, reply
+	}
+	if s.LastPrompt == "" {
+		s.LastPrompt = headPrompt
+	}
 	if len(files) > maxFiles {
 		files = files[len(files)-maxFiles:]
 	}
@@ -194,6 +255,8 @@ func parseSession(path string, info os.FileInfo) *Session {
 		s.Title = customTitle
 	case aiTitle != "":
 		s.Title = aiTitle
+	case summary != "":
+		s.Title = summary
 	default:
 		s.Title = oneLine(s.FirstText, 120)
 	}
@@ -225,29 +288,81 @@ func countHuman(path string) int {
 	}
 }
 
-func worktreeOf(cwd string) string {
-	if fi, err := os.Stat(filepath.Join(cwd, ".git")); err == nil && !fi.IsDir() {
-		return filepath.Base(cwd)
+const gitTTL = 6 * time.Hour
+
+func gitOut(dir string, args ...string) (string, bool) {
+	out, err := exec.Command("git", append([]string{"-C", dir}, args...)...).Output()
+	return strings.TrimSpace(string(out)), err == nil
+}
+
+func realpath(p string) string {
+	if r, err := filepath.EvalSymlinks(p); err == nil {
+		return r
 	}
-	return ""
+	return filepath.Clean(p)
+}
+
+// probeGit marks the cwd as primary (main checkout) or a linked worktree, but only when the repo has linked worktrees.
+func probeGit(cwd string) gitInfo {
+	g := gitInfo{Repo: filepath.Base(cwd), Checked: now().Unix()}
+	if _, err := os.Stat(cwd); err != nil {
+		return g // deleted folder: keep the transcript's branch, no worktree tag
+	}
+	top, ok := gitOut(cwd, "rev-parse", "--git-common-dir", "--show-toplevel")
+	if !ok {
+		g.NoGit = true
+		return g
+	}
+	lines := strings.Split(top, "\n")
+	top = lines[len(lines)-1]
+	wl, ok := gitOut(cwd, "worktree", "list", "--porcelain")
+	if !ok {
+		return g
+	}
+	var trees []string
+	for _, l := range strings.Split(wl, "\n") {
+		if p, found := strings.CutPrefix(l, "worktree "); found {
+			trees = append(trees, realpath(p))
+		}
+	}
+	if len(trees) == 0 {
+		return g
+	}
+	g.Repo = filepath.Base(trees[0])
+	if len(trees) > 1 {
+		if realpath(top) == trees[0] {
+			g.Primary = true
+		} else {
+			g.Linked = filepath.Base(top)
+		}
+	}
+	return g
+}
+
+type index struct {
+	Files map[string]cacheEntry
+	Git   map[string]gitInfo
 }
 
 func cachePath() string {
 	d, _ := os.UserCacheDir()
-	return filepath.Join(d, "claudes", "index-v2.json")
+	return filepath.Join(d, "claudes", "index-v4.json")
+}
+
+func keep(s *Session) bool {
+	return s.Msgs > 0 && s.Cwd != "" && !strings.HasPrefix(s.Cwd, "/tmp") && !strings.HasPrefix(s.Cwd, "/private/tmp")
 }
 
 func loadSessions() []Session {
 	root := filepath.Join(os.Getenv("HOME"), ".claude", "projects")
 	paths, _ := filepath.Glob(filepath.Join(root, "*", "*.jsonl"))
 
-	cache := map[string]cacheEntry{}
+	idx := index{}
 	if b, err := os.ReadFile(cachePath()); err == nil {
-		json.Unmarshal(b, &cache)
+		json.Unmarshal(b, &idx)
 	}
 	var mu sync.Mutex
-	next := map[string]cacheEntry{}
-	var out []Session
+	next := index{Files: map[string]cacheEntry{}, Git: map[string]gitInfo{}}
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, 16)
 	for _, p := range paths {
@@ -260,7 +375,7 @@ func loadSessions() []Session {
 		go func() {
 			defer wg.Done()
 			defer func() { <-sem }()
-			ce, ok := cache[p]
+			ce, ok := idx.Files[p]
 			if !ok || ce.Mtime != info.ModTime().UnixNano() || ce.Size != info.Size() {
 				s := parseSession(p, info)
 				if s == nil {
@@ -269,21 +384,52 @@ func loadSessions() []Session {
 				ce = cacheEntry{info.ModTime().UnixNano(), info.Size(), *s}
 			}
 			mu.Lock()
-			next[p] = ce
+			next.Files[p] = ce
 			mu.Unlock()
 		}()
 	}
 	wg.Wait()
+
+	var stale []string
+	for _, ce := range next.Files {
+		cwd := ce.S.Cwd
+		if _, done := next.Git[cwd]; done || !keep(&ce.S) {
+			continue
+		}
+		g, ok := idx.Git[cwd]
+		next.Git[cwd] = g
+		if !ok || now().Unix()-g.Checked >= int64(gitTTL/time.Second) {
+			stale = append(stale, cwd)
+		}
+	}
+	for _, cwd := range stale {
+		wg.Add(1)
+		sem <- struct{}{}
+		go func() {
+			defer wg.Done()
+			defer func() { <-sem }()
+			g := probeGit(cwd)
+			mu.Lock()
+			next.Git[cwd] = g
+			mu.Unlock()
+		}()
+	}
+	wg.Wait()
+
 	if b, err := json.Marshal(next); err == nil {
 		os.MkdirAll(filepath.Dir(cachePath()), 0o755)
 		os.WriteFile(cachePath(), b, 0o644)
 	}
-	for _, ce := range next {
+	var out []Session
+	for _, ce := range next.Files {
 		s := ce.S
-		if s.Msgs == 0 || s.Cwd == "" || strings.HasPrefix(s.Cwd, "/tmp") || strings.HasPrefix(s.Cwd, "/private/tmp") {
+		if !keep(&s) {
 			continue
 		}
-		s.Worktree = worktreeOf(s.Cwd)
+		s.gitInfo = next.Git[s.Cwd]
+		if s.Branch == "HEAD" || s.NoGit {
+			s.Branch = ""
+		}
 		out = append(out, s)
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].Updated.After(out[j].Updated) })

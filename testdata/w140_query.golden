@@ -1,0 +1,30 @@
+  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                                                                                   
+                                                                                                                                            
+ ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ 
+ │ ❯ auth tok                                                                                                                       1 / 9 │ 
+ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ 
+                                                                                                                                            
+ ▌ ● Fix token refresh race in auth middleware          2m ago   ╭─ preview ──────────────────────────────────────────────────────────────╮ 
+ ▌    chronus-api  feat/auth-refresh  wt auth-refresh  48 msgs   │ Fix token refresh race in auth middleware                              │ 
+                                                                 │                                                                        │ 
+                                                                 │  chronus-api  feat/auth-refresh  wt auth-refresh                       │ 
+                                                                 │ ~/code/chronus-api.worktrees/auth-refresh                              │ 
+                                                                 │ 48 msgs · started Wed Oct 28, 07:12                                    │ 
+                                                                 │                                                                        │ 
+                                                                 │ conversation ───────────────────────────────────────────────────────── │ 
+                                                                 │ ▎ you                                                                  │ 
+                                                                 │ ▎ Why does the second request still send the old token?                │ 
+                                                                 │ ▎                                                                      │ 
+                                                                 │ ▎ claude                                                               │ 
+                                                                 │ ▎ The refresh promise is not shared, so two callers race. I memoized   │ 
+                                                                 │ ▎ it per session and added a regression test; all auth specs pass.     │ 
+                                                                 │ ▎                                                                      │ 
+                                                                 │                                                                        │ 
+                                                                 │ touched src/auth/middleware.ts  src/auth/refresh.ts +1                 │ 
+                                                                 │                                                                        │ 
+                                                                 │ resume ─────────────────────────────────────────────────────────────── │ 
+                                                                 │  cd ~/code/chronus-api.worktrees/auth-refresh                          │ 
+                                                                 │  claude --resume 7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f                  │ 
+                                                                 ╰────────────────────────────────────────────────────────────────────────╯ 
+                                                                                                                                            
+  ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit                                                 1–1 of 1 

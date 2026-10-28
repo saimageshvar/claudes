@@ -1,0 +1,30 @@
+  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                                                                                   
+                                                                                                                                            
+ ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ 
+ │ ❯ search title, folder, branch, or anything said                                                                                 9 / 9 │ 
+ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ 
+                                                                                                                                            
+  Today ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+ ▌ ● Fix token refresh race in auth middleware                                                                                      2m ago  
+ ▌    chronus-api  feat/auth-refresh  wt auth-refresh                                                                              48 msgs  
+                                                                                                                                            
+   ● Migrate mentoring-match job to queue workers                                                                                  41m ago  
+      chronus-api  main [primary]                                                                                                 112 msgs  
+                                                                                                                                            
+   ● Archie chat: streaming render jank                                                                                             1h ago  
+      chronus-web  fix/chat-stream  wt chat-stream                                                                                 27 msgs  
+                                                                                                                                            
+   ● Write fuzzy-search TUI spec                                                                                                    3h ago  
+      claudes                                                                                                                      19 msgs  
+                                                                                                                                            
+   ● Investigate flaky e2e: program-join.spec                                                                                       5h ago  
+      chronus-web  test/stabilize-e2e [primary]                                                                                    64 msgs  
+  Yesterday ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   ● Terraform: bump RDS to 16                                                                                                      1d ago  
+      prod  main                                                                                                                   33 msgs  
+                                                                                                                                            
+                                                                                                                                            
+                                                                                                                                            
+                                                                                                                                            
+                                                                                                                                            
+  ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit                                             ● ○ 1–6 of 9 

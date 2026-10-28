@@ -1,0 +1,30 @@
+  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                                                     
+                                                                                                              
+ ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────╮ 
+ │ ❯ search title, folder, branch, or anything said                                                   9 / 9 │ 
+ ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯ 
+                                                                                                              
+  Today ──────────────────────────────────────────────────────   ╭─ preview ────────────────────────────────╮ 
+ ▌ ● Fix token refresh race in auth middleware          2m ago   │ Fix token refresh race in auth           │ 
+ ▌    chronus-api  feat/auth-refresh  wt auth-refresh  48 msgs   │ middleware                               │ 
+                                                                 │  chronus-api  feat/auth-refresh  wt aut… │ 
+   ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refre… │ 
+      chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 07:12      │ 
+                                                                 │                                          │ 
+   ● Archie chat: streaming render jank                 1h ago   │ conversation ─────────────────────────── │ 
+      chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │ ▎ you                                    │ 
+                                                                 │ ▎ Why does the second request still send │ 
+   ● Write fuzzy-search TUI spec                        3h ago   │ ▎ the old token?                         │ 
+      claudes                                          19 msgs   │ ▎ claude                                 │ 
+                                                                 │ ▎ The refresh promise is not shared, so  │ 
+   ● Investigate flaky e2e: program-join.spec           5h ago   │ ▎ two callers race. I memoized it per    │ 
+      chronus-web  test/stabilize-e2e [primary]        64 msgs   │ ▎ session and added a regression test;…  │ 
+  Yesterday ──────────────────────────────────────────────────   │                                          │ 
+   ● Terraform: bump RDS to 16                          1d ago   │ touched src/auth/middleware.ts  src/aut… │ 
+      prod  main                                       33 msgs   │                                          │ 
+                                                                 │ resume ───────────────────────────────── │ 
+                                                                 │  cd ~/code/chronus-api.worktrees/auth-r… │ 
+                                                                 │  claude --resume 7f3a1c9e-4d21-4b8a-9e0… │ 
+                                                                 ╰──────────────────────────────────────────╯ 
+                                                                                                              
+  ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit               ● ○ 1–6 of 9 
