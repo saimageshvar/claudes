@@ -71,3 +71,28 @@ func TestRankWordStartBeatsMidWord(t *testing.T) {
 		t.Errorf("word start should lead, got %q", got)
 	}
 }
+
+func TestRankWordStartNotShadowedByEarlierHit(t *testing.T) {
+	got := titlesOf(rank(titled("Decogify: a cog in the machine", "A cog later"), "cog"))
+	if len(got) != 2 || got[0] != "Decogify: a cog in the machine" {
+		t.Errorf("equal word-start hits should keep list order, got %q", got)
+	}
+}
+
+func TestRankEqualTierKeepsRecencyOrder(t *testing.T) {
+	// base is newest first; a longer, later hit must not leapfrog a newer one in the same tier
+	got := titlesOf(rank(titled("Brief chr-cog executor plan", "cog-perf", "cog"), "cog"))
+	want := []string{"Brief chr-cog executor plan", "cog-perf", "cog"}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("want %q, got %q", want, got)
+		}
+	}
+}
+
+func TestRankTwoLetterTokenIsLiteralOnly(t *testing.T) {
+	got := titlesOf(rank(titled("Colima ram 20GB", "ap-gateway", "Herdr changelog"), "ap"))
+	if len(got) != 1 || got[0] != "ap-gateway" {
+		t.Errorf("2-letter token should match literally only, got %q", got)
+	}
+}

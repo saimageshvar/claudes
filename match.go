@@ -40,13 +40,33 @@ func wordStart(s string, i int) bool {
 	return !(c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c >= 0x80)
 }
 
-// substringScore ranks a literal hit: a word start beats mid-word, earlier and shorter fields beat later and longer.
-func substringScore(low string, idx, weight int) int {
-	sc := 2000 + weight - min(idx, 100) - min(len(low)/8, 50)
-	if wordStart(low, idx) {
-		sc += 1500
+// literalHit finds tok in low, preferring an occurrence at a word start over an earlier mid-word one.
+func literalHit(low, tok string) (idx int, atWord bool) {
+	idx = -1
+	for from := 0; from <= len(low)-len(tok); {
+		i := strings.Index(low[from:], tok)
+		if i < 0 {
+			break
+		}
+		i += from
+		if wordStart(low, i) {
+			return i, true
+		}
+		if idx < 0 {
+			idx = i
+		}
+		from = i + 1
 	}
-	return sc
+	return idx, false
+}
+
+// literalScore is coarse on purpose: tiers by word start and field weight only, so equal matches keep the
+// newest-first order of the base list.
+func literalScore(atWord bool, weight int) int {
+	if atWord {
+		return 3500 + weight
+	}
+	return 2000 + weight
 }
 
 // rank keeps sessions where every token matches one of title, folder, branch or worktree name, best score first
@@ -93,15 +113,15 @@ func rank(base []*Session, query string) []match {
 				if len(low) != len(val) {
 					continue
 				}
-				if idx := strings.Index(low, tok); idx >= 0 {
-					if sc := substringScore(low, idx, f.weight); sc > best[i] {
+				if idx, atWord := literalHit(low, tok); idx >= 0 {
+					if sc := literalScore(atWord, f.weight); sc > best[i] {
 						best[i] = sc
 					}
 					literal[i] = true
 					mark(i, fi, idx, idx+len(tok))
 				}
 			}
-			if len(tok) < 2 {
+			if len(tok) < 3 { // two letters fuzzy-match most of the list; the literal tiers cover them
 				continue
 			}
 			for _, r := range fuzzy.FindFrom(tok, set) {
