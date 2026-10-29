@@ -10,19 +10,19 @@
                                                                  │  chronus-api  feat/auth-refresh  wt auth-refresh                       │ 
                                                                  │ ~/code/chronus-api.worktrees/auth-refresh                              │ 
                                                                  │ 48 msgs · started Wed Oct 28, 7:12 AM                                  │ 
-                                                                 │ how it started ─────────────────────────────────────────────── ↓ newer │ 
+                                                                 │  how it started                                                ↓ newer │ 
                                                                  │                      ╭ you · Oct 28 7:12 AM ─────────────────────────╮ │ 
                                                                  │                      │ Users get logged out when two tabs refresh at │ │ 
                                                                  │                      │ the same time. Find out why the refresh token │ │ 
                                                                  │                      │ is reused and fix it without changing the     │ │ 
-                                                                 │ latest ─────────────────────────────────────────────────────── ↑ older │ 
+                                                                 │  latest                                                        ↑ older │ 
                                                                  │                                                                        │ 
                                                                  │ ╭ claude · Oct 28 9:12 AM ──────────────────────╮                      │ 
                                                                  │ │ The refresh promise is not shared, so two     │                      │ 
                                                                  │ │ callers race. I memoized it per session and   │                      │ 
                                                                  │ │ added a regression test; all auth specs pass. │                      │ 
                                                                  │ ╰───────────────────────────────────────────────╯                      │ 
-                                                                 │ resume ─────────────────────────────────────────────────────────────── │ 
+                                                                 │  resume                                                                │ 
                                                                  │  cd ~/code/chronus-api.worktrees/auth-refresh                          │ 
                                                                  │  claude --resume 7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f                  │ 
                                                                  ╰────────────────────────────────────────────────────────────────────────╯ 

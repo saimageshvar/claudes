@@ -10,7 +10,7 @@
                                                                  │  chronus-api  feat/auth-refresh  wt auth-refresh                       │ 
    ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refresh                              │ 
       chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 7:12 AM                                  │ 
-                                                                 │ how it started ─────────────────────────────────────────────── ↓ newer │ 
+                                                                 │  how it started                                                ↓ newer │ 
    ● Archie chat: streaming render jank                 1h ago   │                      ╭ you · Oct 28 7:12 AM ─────────────────────────╮ │ 
       chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │                      │ Users get logged out when two tabs refresh at │ │ 
                                                                  │                      │ the same time. Find out why the refresh token │ │ 
@@ -23,7 +23,7 @@
    ● Terraform: bump RDS to 16                          1d ago   │ │ the same tick and the second one sends the     │                     │ 
       prod  main                                       33 msgs   │ │ already-rotated token. Next I will look at how │                     │ 
                                                                  │ │ the refresh promise is cached.                 │                     │ 
-   ● Explain webhook retry backoff                      1d ago   │ latest ─────────────────────────────────────────────────────────────── │ 
+   ● Explain webhook retry backoff                      1d ago   │  latest                                                                │ 
       chronus-api  main [primary]                        1 msg   │                                                                        │ 
   This week ──────────────────────────────────────────────────   │                                                                        │ 
    ● Review PR 2841: mentor availability with a delib…  4d ago   │                                                                        │ 
@@ -42,7 +42,7 @@
                                                                  │ │ callers race. I memoized it per session and   │                      │ 
                                                                  │ │ added a regression test; all auth specs pass. │                      │ 
                                                                  │ ╰───────────────────────────────────────────────╯                      │ 
-                                                                 │ resume ─────────────────────────────────────────────────────────────── │ 
+                                                                 │  resume                                                                │ 
                                                                  │  cd ~/code/chronus-api.worktrees/auth-refresh                          │ 
                                                                  │  claude --resume 7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f                  │ 
                                                                  ╰────────────────────────────────────────────────────────────────────────╯ 

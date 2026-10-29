@@ -62,18 +62,15 @@ func cardRow(tw int, left []span) string {
 	return pad(1, cCardBg) + line(tw, cCardBg, left, nil) + pad(1, cCardBg)
 }
 
-// cardRule is a labelled divider; hint, when set, sits at its right end ("↓ newer").
+// cardRule is a section band: a filled label pill on a tinted full-width bar, so it cannot be mistaken for a
+// message border; hint, when set, sits at the bar's right end ("↓ newer").
 func cardRule(tw int, label string, st lipgloss.Style, hint string) string {
-	left := []span{sp(label+" ", st.Bold(true))}
-	right := 0
+	pill := lipgloss.NewStyle().Background(st.GetForeground()).Foreground(white).Bold(true)
+	var right []span
 	if hint != "" {
-		right = runewidth.StringWidth(hint) + 1
+		right = []span{sp(hint+" ", sDim)}
 	}
-	left = append(left, sp(strings.Repeat("─", max(tw-runewidth.StringWidth(label)-1-right, 0)), sRule))
-	if hint != "" {
-		left = append(left, sp(" "+hint, sDim))
-	}
-	return cardRow(tw, left)
+	return line(tw+2, cKeyBg, []span{sp(" ", sDim), sp(" "+label+" ", pill)}, right)
 }
 
 // bubble draws one message as a rounded box: yours on the right, Claude's on the left, sized to its text.

@@ -10,7 +10,7 @@
                                                                  │  chronus-api  feat/auth-refresh  wt aut… │ 
    ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refre… │ 
       chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 7:12 AM    │ 
-                                                                 │ resume ───────────────────────────────── │ 
+                                                                 │  resume                                  │ 
                                                                  ╰──────────────────────────────────────────╯ 
                                                                                                               
   ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit         ● ○ ○ ○ ○ 1–2 of 9 

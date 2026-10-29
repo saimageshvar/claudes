@@ -10,19 +10,19 @@
                                                                  │  chronus-api  feat/auth-refresh  wt aut… │ 
    ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refre… │ 
       chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 7:12 AM    │ 
-                                                                 │ how it started ───────────────── ↓ newer │ 
+                                                                 │  how it started                  ↓ newer │ 
    ● Archie chat: streaming render jank                 1h ago   │             ╭ you · Oct 28 7:12 AM ────╮ │ 
       chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │             │ Users get logged out     │ │ 
                                                                  │             │ when two tabs refresh at │ │ 
    ● Write fuzzy-search TUI spec                        3h ago   │             │ the same time. Find out  │ │ 
-      claudes                                          19 msgs   │ latest ───────────────────────── ↑ older │ 
+      claudes                                          19 msgs   │  latest                          ↑ older │ 
                                                                  │ │ not shared, so two       │             │ 
    ● Investigate flaky e2e: program-join.spec           5h ago   │ │ callers race. I memoized │             │ 
       chronus-web  test/stabilize-e2e [primary]        64 msgs   │ │ it per session and added │             │ 
   Yesterday ──────────────────────────────────────────────────   │ │ a regression test; all   │             │ 
    ● Terraform: bump RDS to 16                          1d ago   │ │ auth specs pass.         │             │ 
       prod  main                                       33 msgs   │ ╰──────────────────────────╯             │ 
-                                                                 │ resume ───────────────────────────────── │ 
+                                                                 │  resume                                  │ 
    ● Explain webhook retry backoff                      1d ago   │  cd ~/code/chronus-api.worktrees/auth-r… │ 
       chronus-api  main [primary]                        1 msg   │  claude --resume 7f3a1c9e-4d21-4b8a-9e0… │ 
                                                                  ╰──────────────────────────────────────────╯ 
