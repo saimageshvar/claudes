@@ -6,6 +6,16 @@ session's folder and replaces itself with `claude --resume <id>`, in the same pa
 Sessions come from `~/.claude/projects/*/*.jsonl`. Titles, folders, branches, worktree info and counts are
 cached in `~/Library/Caches/claudes/index-v6.json` (the OS cache dir), so launch is instant after the first run.
 
+## Install
+
+Needs `gh` (authenticated with access to this repo) and Go.
+
+```sh
+gh api repos/saimageshvar/claudes/contents/install.sh -H 'Accept: application/vnd.github.raw' | bash
+```
+
+Builds from source into `~/.local/bin/claudes`.
+
 ## Keys
 
 | Key | Action |
