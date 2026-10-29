@@ -9,7 +9,7 @@
  ▌    chronus-web  feat/availability-and-a-very-long-… 41 msgs   │ a deliberately very long title that mus… │ 
   Older ──────────────────────────────────────────────────────   │  chronus-web  feat/availability-and-a-v… │ 
    ● Old notes                                          5w ago   │ ~/code/chronus-web.worktrees/pr-2841     │ 
-      notes                                             3 msgs   │ 41 msgs · started Sat Oct 24, 07:14      │ 
+      notes                                             3 msgs   │ 41 msgs · started Sat Oct 24, 7:14 AM    │ 
                                                                  │ No chat text captured for this session.  │ 
                                                                  │                                          │ 
                                                                  │                                          │ 
@@ -21,7 +21,7 @@
                                                                  │                                          │ 
                                                                  │                                          │ 
                                                                  │                                          │ 
-                                                                 │ touched —                                │ 
+                                                                 │                                          │ 
                                                                  │ resume ───────────────────────────────── │ 
                                                                  │  cd ~/code/chronus-web.worktrees/pr-2841 │ 
                                                                  │  claude --resume 77777777-2222-3333-444… │ 

@@ -43,9 +43,9 @@ func turn(prompt, reply string, at time.Time) []Msg {
 
 func fixtures() []Session {
 	ago := func(d time.Duration) time.Time { return fixedNow.Add(-d) }
-	mk := func(id, title, cwd, branch string, g gitInfo, upd time.Duration, n int, prompt, reply string, files ...string) Session {
+	mk := func(id, title, cwd, branch string, g gitInfo, upd time.Duration, n int, prompt, reply string) Session {
 		return Session{ID: id, Title: title, Cwd: cwd, Branch: branch, gitInfo: g, Updated: ago(upd), Started: ago(upd + 2*time.Hour),
-			Msgs: n, LastPrompt: prompt, Tail: turn(prompt, reply, ago(upd)), Files: files}
+			Msgs: n, LastPrompt: prompt, Tail: turn(prompt, reply, ago(upd))}
 	}
 	first := func(s Session, prompt, reply string) Session {
 		s.FirstText, s.Head = prompt, turn(prompt, reply, s.Started)
@@ -55,13 +55,12 @@ func fixtures() []Session {
 		first(mk("7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f", "Fix token refresh race in auth middleware", "/home/u/code/chronus-api.worktrees/auth-refresh", "feat/auth-refresh",
 			gitInfo{Repo: "chronus-api", Linked: "auth-refresh"}, 2*time.Minute, 48,
 			"Why does the second request still send the old token?",
-			"The refresh promise is not shared, so two callers race. I memoized it per session and added a regression test; all auth specs pass.",
-			"/home/u/code/chronus-api.worktrees/auth-refresh/src/auth/middleware.ts", "/home/u/code/chronus-api.worktrees/auth-refresh/src/auth/refresh.ts", "/home/u/code/chronus-api.worktrees/auth-refresh/test/auth.spec.ts"),
+			"The refresh promise is not shared, so two callers race. I memoized it per session and added a regression test; all auth specs pass."),
 			"Users get logged out when two tabs refresh at the same time. Find out why the refresh token is reused and fix it without changing the session cookie format.",
 			"Reproduced it: both tabs call refresh() within the same tick and the second one sends the already-rotated token. Next I will look at how the refresh promise is cached."),
 		mk("11111111-2222-3333-4444-555555555555", "Migrate mentoring-match job to queue workers", "/home/u/code/chronus-api", "main", gitInfo{Repo: "chronus-api", Primary: true}, 41*time.Minute, 112, "Move it to the queue.", "Done."),
 		mk("22222222-2222-3333-4444-555555555555", "Archie chat: streaming render jank", "/home/u/code/chronus-web.worktrees/chat-stream", "fix/chat-stream", gitInfo{Repo: "chronus-web", Linked: "chat-stream"}, 1*time.Hour+5*time.Minute, 27, "Why does it jank?", "Re-render per token."),
-		mk("3d5e88b2-1c4f-4a6b-b9e0-4d5c6b7a8f90", "Write fuzzy-search TUI spec", "/home/u/scratch/claudes", "", gitInfo{Repo: "claudes", NoGit: true}, 3*time.Hour, 19, "Sketch the list and preview layout.", "Two-line rows with a preview pane and a help bar at the bottom. I wrote it up in SPEC.md.", "/home/u/scratch/claudes/SPEC.md"),
+		mk("3d5e88b2-1c4f-4a6b-b9e0-4d5c6b7a8f90", "Write fuzzy-search TUI spec", "/home/u/scratch/claudes", "", gitInfo{Repo: "claudes", NoGit: true}, 3*time.Hour, 19, "Sketch the list and preview layout.", "Two-line rows with a preview pane and a help bar at the bottom. I wrote it up in SPEC.md."),
 		mk("44444444-2222-3333-4444-555555555555", "Investigate flaky e2e: program-join.spec", "/home/u/code/chronus-web", "test/stabilize-e2e", gitInfo{Repo: "chronus-web", Primary: true}, 5*time.Hour, 64, "", ""),
 		mk("55555555-2222-3333-4444-555555555555", "Terraform: bump RDS to 16", "/home/u/infra/prod", "main", gitInfo{Repo: "prod"}, 25*time.Hour, 33, "", ""),
 		mk("66666666-2222-3333-4444-555555555555", "Explain webhook retry backoff", "/home/u/code/chronus-api", "main", gitInfo{Repo: "chronus-api", Primary: true}, 30*time.Hour, 1, "", ""),

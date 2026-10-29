@@ -18,7 +18,6 @@ const (
 	headBytes   = 256 << 10
 	tailBytes   = 1 << 20
 	maxLineJSON = 400 << 10
-	maxFiles    = 5
 	maxBackScan = 16 << 20
 )
 
@@ -50,7 +49,6 @@ type Session struct {
 	LastPrompt string
 	Head       []Msg
 	Tail       []Msg
-	Files      []string
 	Started    time.Time
 	Updated    time.Time
 	Msgs       int
@@ -98,12 +96,8 @@ type record struct {
 }
 
 type block struct {
-	Type  string `json:"type"`
-	Text  string `json:"text"`
-	Name  string `json:"name"`
-	Input struct {
-		FilePath string `json:"file_path"`
-	} `json:"input"`
+	Type string `json:"type"`
+	Text string `json:"text"`
 }
 
 func blocks(raw json.RawMessage) []block {
@@ -170,8 +164,6 @@ func parseSession(path string, info os.FileInfo) *Session {
 	}
 	s := &Session{ID: strings.TrimSuffix(filepath.Base(path), ".jsonl"), Path: path, Updated: info.ModTime()}
 	var customTitle, aiTitle, summary string
-	var files []string
-	seenFile := map[string]bool{}
 	collect := func(chunk []byte, into *[]Msg) {
 		for _, line := range bytes.Split(chunk, []byte{'\n'}) {
 			switch {
@@ -216,23 +208,13 @@ func parseSession(path string, info os.FileInfo) *Session {
 								s.FirstText = b.Text
 							}
 							s.LastPrompt = b.Text
-							*into = append(*into, Msg{User: true, Text: capText(b.Text), At: at})
+							addUser(into, b.Text, at)
 						}
 					}
 				case "assistant":
 					for _, b := range blocks(r.Message.Content) {
-						switch {
-						case b.Type == "text" && strings.TrimSpace(b.Text) != "":
-							if n := len(*into); n > 0 && !(*into)[n-1].User {
-								(*into)[n-1].Text = capText((*into)[n-1].Text + "\n\n" + b.Text)
-							} else {
-								*into = append(*into, Msg{Text: capText(b.Text), At: at})
-							}
-						case b.Type == "tool_use" && (b.Name == "Edit" || b.Name == "Write") && b.Input.FilePath != "":
-							if !seenFile[b.Input.FilePath] {
-								seenFile[b.Input.FilePath] = true
-								files = append(files, b.Input.FilePath)
-							}
+						if b.Type == "text" {
+							addClaude(into, b.Text, at)
 						}
 					}
 				}
@@ -260,10 +242,6 @@ func parseSession(path string, info os.FileInfo) *Session {
 		s.LastPrompt = headPrompt
 	}
 	s.Head, s.Tail = splitChat(headMsgs, tailMsgs, tail == nil)
-	if len(files) > maxFiles {
-		files = files[len(files)-maxFiles:]
-	}
-	s.Files = files
 	switch {
 	case customTitle != "":
 		s.Title = customTitle
@@ -545,4 +523,57 @@ func splitChat(head, tail []Msg, whole bool) (h, t []Msg) {
 		tail = tail[len(tail)-keepMsgs:]
 	}
 	return head, tail
+}
+
+func addUser(into *[]Msg, text string, at time.Time) {
+	*into = append(*into, Msg{User: true, Text: capText(text), At: at})
+}
+
+// addClaude merges consecutive text blocks of one turn into a single message.
+func addClaude(into *[]Msg, text string, at time.Time) {
+	if strings.TrimSpace(text) == "" {
+		return
+	}
+	if n := len(*into); n > 0 && !(*into)[n-1].User {
+		(*into)[n-1].Text = capText((*into)[n-1].Text + "\n\n" + text)
+		return
+	}
+	*into = append(*into, Msg{Text: capText(text), At: at})
+}
+
+// loadChat reads the whole transcript for every message, so the preview can scroll the full history.
+func loadChat(path string) []Msg {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	defer f.Close()
+	var msgs []Msg
+	r := bufio.NewReaderSize(f, 1<<20)
+	for {
+		line, err := readLine(r)
+		if bytes.HasPrefix(line, []byte(`{"parentUuid"`)) && len(line) < maxLineJSON {
+			var rec record
+			if json.Unmarshal(line, &rec) == nil && !rec.Sidechain {
+				at, _ := time.Parse(time.RFC3339, rec.Timestamp)
+				switch {
+				case rec.Type == "user" && (rec.Origin == nil || rec.Origin.Kind == "human"):
+					for _, b := range blocks(rec.Message.Content) {
+						if b.Type == "text" && isHumanText(b.Text) {
+							addUser(&msgs, b.Text, at)
+						}
+					}
+				case rec.Type == "assistant":
+					for _, b := range blocks(rec.Message.Content) {
+						if b.Type == "text" {
+							addClaude(&msgs, b.Text, at)
+						}
+					}
+				}
+			}
+		}
+		if err != nil {
+			return msgs
+		}
+	}
 }

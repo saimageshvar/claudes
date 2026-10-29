@@ -17,7 +17,7 @@ func TestLoadAndSearch(t *testing.T) {
 		t.Skip("no sessions on this machine")
 	}
 	for _, s := range ss[:min(3, len(ss))] {
-		t.Logf("%s | %s | repo=%s branch=%s linked=%q primary=%v msgs=%d files=%d", s.ID[:8], s.Title, s.Repo, s.Branch, s.Linked, s.Primary, s.Msgs, len(s.Files))
+		t.Logf("%s | %s | repo=%s branch=%s linked=%q primary=%v msgs=%d", s.ID[:8], s.Title, s.Repo, s.Branch, s.Linked, s.Primary, s.Msgs)
 	}
 	st = time.Now()
 	hits := transcriptHits(ss, []string{"json-render"}, func() bool { return false })

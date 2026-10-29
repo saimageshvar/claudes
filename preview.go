@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -90,7 +89,7 @@ func bubble(m Msg, tw int) []string {
 	}
 	label := " " + who
 	if !m.At.IsZero() {
-		label += " · " + m.At.Local().Format("Jan 2 15:04")
+		label += " · " + m.At.Local().Format("Jan 2 3:04 PM")
 	}
 	label += " "
 	inner := runewidth.StringWidth(label) - 2
@@ -145,30 +144,16 @@ func previewTop(s *Session, tw int) []string {
 	return append(out,
 		cardRow(tw, tags(s)),
 		cardRow(tw, []span{sp(short(s.Cwd), sDim)}),
-		cardRow(tw, []span{sp(msgs(s.Msgs), sFg), sp(" · ", sDim), sp("started ", sDim), sp(s.Started.Local().Format("Mon Jan 2, 15:04"), sFg)}))
+		cardRow(tw, []span{sp(msgs(s.Msgs), sFg), sp(" · ", sDim), sp("started ", sDim), sp(s.Started.Local().Format("Mon Jan 2, 3:04 PM"), sFg)}))
 }
 
-// previewBottom pins the touched files and the resume command to the card's foot.
+// previewBottom pins the resume command to the card's foot.
 func previewBottom(s *Session, tw int) []string {
-	touched := []span{sp("touched ", sDim)}
-	if len(s.Files) == 0 {
-		touched = append(touched, sp("—", sDim))
-	}
-	for i, f := range s.Files {
-		if i == 2 {
-			touched = append(touched, sp(fmt.Sprintf(" +%d", len(s.Files)-2), sDim))
-			break
-		}
-		if i > 0 {
-			touched = append(touched, sp("  ", sFg))
-		}
-		touched = append(touched, sp(strings.TrimPrefix(short(f), short(s.Cwd)+"/"), sFg))
-	}
 	code := func(ss ...span) string {
 		return pad(1, cCardBg) + line(tw, cCodeBg, append([]span{sp(" ", sCode)}, ss...), nil) + pad(1, cCardBg)
 	}
 	return []string{
-		cardRow(tw, touched), cardRule(tw, "resume", sGreen, ""),
+		cardRule(tw, "resume", sGreen, ""),
 		code(sp("cd", sCodeCd), sp(" "+short(s.Cwd), sCode)),
 		code(sp("claude", sCodeCl), sp(" --resume", sCodeArg), sp(" "+s.ID, sCode)),
 	}

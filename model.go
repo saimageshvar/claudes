@@ -19,11 +19,12 @@ import (
 var now = time.Now
 
 const (
-	wideAt  = 110
-	listWW  = 62 // list column in wide mode
-	gapW    = 2
-	bodyTop = 6 // header, blank, 3-line search box, blank
-	chrome  = 8 // bodyTop + blank + footer
+	maxPaneMsgs = 400 // most messages either preview pane keeps
+	wideAt      = 110
+	listWW      = 62 // list column in wide mode
+	gapW        = 2
+	bodyTop     = 6 // header, blank, 3-line search box, blank
+	chrome      = 8 // bodyTop + blank + footer
 )
 
 var tabNames = []string{"All", "Today", "This week", "Worktrees"}
@@ -49,7 +50,12 @@ type (
 	loadedMsg   []Session
 	debounceMsg int64
 	quitMsg     struct{}
-	hitsMsg     struct {
+	chatDueMsg  string // selection settled on this session; load its full chat
+	chatMsg     struct {
+		key  string
+		msgs []Msg
+	}
+	hitsMsg struct {
 		seq int64
 		ids map[string]bool
 	}
@@ -67,6 +73,8 @@ type model struct {
 	pvBot       []string
 	headOn      bool
 	tailOn      bool
+	chats       map[string][]Msg // full transcripts of sessions viewed, by chatKey
+	chatWanted  map[string]bool  // loads already scheduled or running
 	sp          spinner.Model
 	w, h        int
 	showPreview bool
@@ -86,7 +94,8 @@ func newModel() *model {
 	in.PlaceholderStyle = sDim
 	in.TextStyle = sFg
 	in.Focus()
-	m := &model{input: in, head: viewport.New(0, 0), tail: viewport.New(0, 0), showPreview: true}
+	m := &model{input: in, head: viewport.New(0, 0), tail: viewport.New(0, 0), showPreview: true,
+		chats: map[string][]Msg{}, chatWanted: map[string]bool{}}
 	l := list.New(nil, delegate{m}, 0, 0)
 	l.SetShowTitle(false)
 	l.SetShowStatusBar(false)
@@ -189,7 +198,14 @@ func (m *model) refreshPreview() {
 	tw := w - 2
 	m.head.Width, m.tail.Width = w, w
 	m.pvTop, m.pvBot = previewTop(s, tw), previewBottom(s, tw)
-	head, tail := chat(s.Head, tw), chat(s.Tail, tw)
+	headMsgs, tailMsgs := s.Head, s.Tail
+	if all, ok := m.chats[chatKey(s)]; ok {
+		headMsgs, tailMsgs = all[:min(len(all), maxPaneMsgs)], nil
+		if len(all) > shortChat {
+			tailMsgs = all[max(len(all)-maxPaneMsgs, 0):]
+		}
+	}
+	head, tail := chat(headMsgs, tw), chat(tailMsgs, tw)
 	m.headOn, m.tailOn = len(head) > 0, len(tail) > 0
 
 	rows := h - len(m.pvTop) - len(m.pvBot)
@@ -300,8 +316,44 @@ func (m *model) resume() tea.Cmd {
 	return tea.Tick(350*time.Millisecond, func(time.Time) tea.Msg { return quitMsg{} })
 }
 
+func chatKey(s *Session) string { return fmt.Sprintf("%s|%d", s.ID, s.Updated.UnixNano()) }
+
+// wantChat schedules the full transcript of the selected session once the selection has rested on it.
+func (m *model) wantChat() tea.Cmd {
+	s := m.selected()
+	if s == nil || m.w == 0 || !m.wide() {
+		return nil
+	}
+	key := chatKey(s)
+	if _, ok := m.chats[key]; ok || m.chatWanted[key] {
+		return nil
+	}
+	m.chatWanted[key] = true
+	return tea.Tick(120*time.Millisecond, func(time.Time) tea.Msg { return chatDueMsg(key) })
+}
+
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	mm, c := m.update(msg)
+	return mm, tea.Batch(c, m.wantChat())
+}
+
+func (m *model) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case chatDueMsg:
+		key := string(msg)
+		s := m.selected()
+		if s == nil || chatKey(s) != key {
+			delete(m.chatWanted, key)
+			return m, nil
+		}
+		path := s.Path
+		return m, func() tea.Msg { return chatMsg{key, loadChat(path)} }
+	case chatMsg:
+		m.chats[msg.key], m.chatWanted[msg.key] = msg.msgs, false
+		if s := m.selected(); s != nil && chatKey(s) == msg.key {
+			m.refreshPreview()
+		}
+		return m, nil
 	case tea.WindowSizeMsg:
 		m.w, m.h = msg.Width, msg.Height
 		m.layout()
