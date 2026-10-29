@@ -58,132 +58,79 @@ func wrap(s string, w, n int) []string {
 	return out
 }
 
-type exchange struct {
-	rule        string
-	prompt, rep string
+// cardRow is one card interior row: a cell of padding either side of tw cells of content, on the card background.
+func cardRow(tw int, left []span) string {
+	return pad(1, cCardBg) + line(tw, cCardBg, left, nil) + pad(1, cCardBg)
 }
 
-type pvBlock struct {
-	label string
-	st    lipgloss.Style
-	text  []string // fully wrapped
-	n     int      // lines granted
+// cardRule is a labelled divider; hint, when set, sits at its right end ("↓ newer").
+func cardRule(tw int, label string, st lipgloss.Style, hint string) string {
+	left := []span{sp(label+" ", st.Bold(true))}
+	right := 0
+	if hint != "" {
+		right = runewidth.StringWidth(hint) + 1
+	}
+	left = append(left, sp(strings.Repeat("─", max(tw-runewidth.StringWidth(label)-1-right, 0)), sRule))
+	if hint != "" {
+		left = append(left, sp(" "+hint, sDim))
+	}
+	return cardRow(tw, left)
 }
 
-// conversation lays out how the session started and where it was left off in exactly budget rows,
-// giving spare rows to the latest exchange first.
-func conversation(s *Session, tw, budget int, row func([]span) string, rule func(string, lipgloss.Style) string) []string {
-	ex := []exchange{{"conversation", s.LastPrompt, s.LastReply}}
-	if s.FirstText != "" && clean(s.FirstText) != clean(s.LastPrompt) {
-		ex = []exchange{{"how it started", s.FirstText, s.FirstReply}, {"where you left off", s.LastPrompt, s.LastReply}}
+// bubble draws one message as a rounded box: yours on the right, Claude's on the left, sized to its text.
+func bubble(m Msg, tw int) []string {
+	maxW := max(tw*72/100, 18)
+	lines := wrap(clean(m.Text), maxW-4, 9)
+	if len(lines) == 0 {
+		return nil
 	}
-	// A block costs its label row plus its granted lines; n == 0 hides it. The first exchange starts with just its
-	// prompt so both exchanges fit a 30-row terminal.
-	cost := func(b *pvBlock) int {
-		if b.n == 0 {
-			return 0
-		}
-		return 1 + b.n
+	who, whoSt, border, fill := "claude", sPink, sBorder, lipgloss.TerminalColor(nil)
+	if m.User {
+		who, whoSt, border, fill = "you", sAccent, sAccent, cSelBg
 	}
-	build := func(ex []exchange) ([][]*pvBlock, int) {
-		var groups [][]*pvBlock
-		used := 0
-		for ei, e := range ex {
-			var g []*pvBlock
-			for bi, b := range []struct {
-				label, text string
-				st          lipgloss.Style
-			}{{"you", e.prompt, sCyan}, {"claude", e.rep, sPink}} {
-				if t := clean(b.text); t != "" {
-					n := 1
-					if len(ex) == 2 && ei == 0 && bi == 1 {
-						n = 0
-					}
-					g = append(g, &pvBlock{label: b.label, st: b.st, text: wrap(t, tw-2, 1<<20), n: n})
-				}
-			}
-			used++ // rule
-			for _, b := range g {
-				used += cost(b)
-			}
-			groups = append(groups, g)
-		}
-		return groups, used
+	label := " " + who
+	if !m.At.IsZero() {
+		label += " · " + m.At.Local().Format("Jan 2 15:04")
 	}
-	groups, used := build(ex)
-	if used > budget && len(ex) == 2 {
-		ex = ex[1:]
-		groups, used = build(ex)
+	label += " "
+	inner := runewidth.StringWidth(label) - 2
+	for _, l := range lines {
+		inner = max(inner, runewidth.StringWidth(l))
 	}
-	spare := budget - used
-	// Round-robin, newest first: where you left off (claude, you), then how it started (you, claude).
-	var order []*pvBlock
-	for gi := len(groups) - 1; gi >= 0; gi-- {
-		g := groups[gi]
-		if gi == len(groups)-1 {
-			for bi := len(g) - 1; bi >= 0; bi-- {
-				order = append(order, g[bi])
-			}
-		} else {
-			order = append(order, g...)
-		}
+	bw := inner + 4
+	st := func(x lipgloss.Style) lipgloss.Style { return onBg(x, fill) }
+	lead := ""
+	if m.User {
+		lead = strings.Repeat(" ", max(tw-bw, 0))
 	}
-	for spare > 0 {
-		gave := false
-		for _, b := range order {
-			need := 1
-			if b.n == 0 {
-				need = 2 // a hidden block also needs its label row
-			}
-			if spare >= need && b.n < len(b.text) {
-				b.n++
-				spare -= need
-				gave = true
-			}
-		}
-		if !gave {
-			break
-		}
+	row := func(ss ...span) string { return cardRow(tw, append([]span{sp(lead, sFg)}, ss...)) }
+
+	out := []string{row(
+		sp("╭", st(border)), sp(label, st(whoSt.Bold(true))),
+		sp(strings.Repeat("─", bw-2-runewidth.StringWidth(label))+"╮", st(border)))}
+	for _, l := range lines {
+		out = append(out, row(
+			sp("│ ", st(border)), sp(l+strings.Repeat(" ", inner-runewidth.StringWidth(l)), st(sFg)), sp(" │", st(border))))
 	}
+	return append(out, row(sp("╰"+strings.Repeat("─", bw-2)+"╯", st(border))))
+}
+
+// chat is the bubbles of msgs one blank row apart, oldest first.
+func chat(msgs []Msg, tw int) []string {
 	var out []string
-	for gi, e := range ex {
-		out = append(out, rule(e.rule, sCyan))
-		for _, b := range groups[gi] {
-			if b.n == 0 {
-				continue
+	for _, m := range msgs {
+		if b := bubble(m, tw); len(b) > 0 {
+			if len(out) > 0 {
+				out = append(out, cardRow(tw, nil))
 			}
-			out = append(out, row([]span{sp("▎ ", b.st), sp(b.label, b.st.Bold(true))}))
-			ls := b.text[:min(b.n, len(b.text))]
-			if b.n < len(b.text) {
-				last := ls[len(ls)-1]
-				ls = append(ls[:len(ls)-1:len(ls)-1], runewidth.Truncate(last, tw-3, "")+"…")
-			}
-			for _, t := range ls {
-				out = append(out, row([]span{sp("▎ ", b.st), sp(t, sFg)}))
-			}
+			out = append(out, b...)
 		}
 	}
-	for len(out) < budget {
-		out = append(out, row(nil))
-	}
-	return out[:max(min(len(out), budget), 0)]
+	return out
 }
 
-// previewLines is the card interior: header at the top, files and the resume command pinned to the bottom,
-// the conversation filling every row between; each line is exactly w cells on the card background.
-func previewLines(s *Session, w, h int) []string {
-	bg := cCardBg
-	tw := w - 2
-	row := func(left []span) string { return pad(1, bg) + line(tw, bg, left, nil) + pad(1, bg) }
-	blank := row(nil)
-	rule := func(label string, st lipgloss.Style) string {
-		return row([]span{sp(label+" ", st.Bold(true)), sp(strings.Repeat("─", max(tw-len(label)-1, 0)), sRule)})
-	}
-	var out []string
-	if s == nil {
-		return out
-	}
-
+// previewTop is the card header: title (two rows), tags, folder and counts.
+func previewTop(s *Session, tw int) []string {
 	title, tst := wrap(clean(s.Title), tw, 2), sBold
 	if len(title) == 0 {
 		title, tst = []string{"(untitled)"}, sDim
@@ -191,17 +138,18 @@ func previewLines(s *Session, w, h int) []string {
 	for len(title) < 2 {
 		title = append(title, "")
 	}
+	var out []string
 	for _, t := range title {
-		out = append(out, row([]span{sp(t, tst)}))
+		out = append(out, cardRow(tw, []span{sp(t, tst)}))
 	}
-	out = append(out, row(tags(s)))
-	out = append(out, row([]span{sp(short(s.Cwd), sDim)}))
-	out = append(out, row([]span{sp(msgs(s.Msgs), sFg), sp(" · ", sDim), sp("started ", sDim), sp(s.Started.Local().Format("Mon Jan 2, 15:04"), sFg)}))
-	out = append(out, blank)
-	const bottomRows = 6 // blank, touched, blank, resume rule, 2 code lines
-	out = append(out, conversation(s, tw, max(h-len(out)-bottomRows, 0), row, rule)...)
-	out = append(out, blank)
+	return append(out,
+		cardRow(tw, tags(s)),
+		cardRow(tw, []span{sp(short(s.Cwd), sDim)}),
+		cardRow(tw, []span{sp(msgs(s.Msgs), sFg), sp(" · ", sDim), sp("started ", sDim), sp(s.Started.Local().Format("Mon Jan 2, 15:04"), sFg)}))
+}
 
+// previewBottom pins the touched files and the resume command to the card's foot.
+func previewBottom(s *Session, tw int) []string {
 	touched := []span{sp("touched ", sDim)}
 	if len(s.Files) == 0 {
 		touched = append(touched, sp("—", sDim))
@@ -216,15 +164,14 @@ func previewLines(s *Session, w, h int) []string {
 		}
 		touched = append(touched, sp(strings.TrimPrefix(short(f), short(s.Cwd)+"/"), sFg))
 	}
-	out = append(out, row(touched), blank, rule("resume", sGreen))
-
 	code := func(ss ...span) string {
-		return pad(1, bg) + line(tw, cCodeBg, append([]span{sp(" ", sCode)}, ss...), nil) + pad(1, bg)
+		return pad(1, cCardBg) + line(tw, cCodeBg, append([]span{sp(" ", sCode)}, ss...), nil) + pad(1, cCardBg)
 	}
-	out = append(out,
+	return []string{
+		cardRow(tw, touched), cardRule(tw, "resume", sGreen, ""),
 		code(sp("cd", sCodeCd), sp(" "+short(s.Cwd), sCode)),
-		code(sp("claude", sCodeCl), sp(" --resume", sCodeArg), sp(" "+s.ID, sCode)))
-	return out
+		code(sp("claude", sCodeCl), sp(" --resume", sCodeArg), sp(" "+s.ID, sCode)),
+	}
 }
 
 // card wraps the interior lines in a rounded border with " preview " set into the top edge; exactly w×h cells.

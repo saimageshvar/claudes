@@ -4,7 +4,7 @@ A full-screen picker for Claude Code sessions. Find a session and press enter: `
 session's folder and replaces itself with `claude --resume <id>`, in the same pane or tab.
 
 Sessions come from `~/.claude/projects/*/*.jsonl`. Titles, folders, branches, worktree info and counts are
-cached in `~/Library/Caches/claudes/index-v5.json` (the OS cache dir), so launch is instant after the first run.
+cached in `~/Library/Caches/claudes/index-v6.json` (the OS cache dir), so launch is instant after the first run.
 
 ## Keys
 
@@ -18,7 +18,8 @@ cached in `~/Library/Caches/claudes/index-v5.json` (the OS cache dir), so launch
 | `ctrl+p` | show / hide the preview (wide terminals, 110+ columns) |
 | `esc` | clear the search; quit when it is already empty |
 | `ctrl+c` | quit |
-| mouse | click a row to select it, double-click to resume, click a tab to switch, wheel to scroll |
+| `shift+↑` `shift+↓` | scroll the preview's "latest" chat |
+| mouse | wheel over the preview's top pane ("how it started") scrolls down to newer messages, over the bottom pane ("latest") scrolls up to older ones; click a row to select it, double-click to resume, click a tab to switch, wheel to scroll |
 
 ## Development
 

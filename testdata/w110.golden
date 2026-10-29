@@ -10,18 +10,18 @@
                                                                  │  chronus-api  feat/auth-refresh  wt aut… │ 
    ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refre… │ 
       chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 07:12      │ 
-                                                                 │                                          │ 
-   ● Archie chat: streaming render jank                 1h ago   │ how it started ───────────────────────── │ 
-      chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │ ▎ you                                    │ 
-                                                                 │ ▎ Users get logged out when two tabs…    │ 
-   ● Write fuzzy-search TUI spec                        3h ago   │ where you left off ───────────────────── │ 
-      claudes                                          19 msgs   │ ▎ you                                    │ 
-                                                                 │ ▎ Why does the second request still sen… │ 
-   ● Investigate flaky e2e: program-join.spec           5h ago   │ ▎ claude                                 │ 
-      chronus-web  test/stabilize-e2e [primary]        64 msgs   │ ▎ The refresh promise is not shared, so… │ 
-  Yesterday ──────────────────────────────────────────────────   │                                          │ 
-   ● Terraform: bump RDS to 16                          1d ago   │ touched src/auth/middleware.ts  src/aut… │ 
-      prod  main                                       33 msgs   │                                          │ 
+                                                                 │ how it started ───────────────── ↓ newer │ 
+   ● Archie chat: streaming render jank                 1h ago   │             ╭ you · Oct 28 07:12 ──────╮ │ 
+      chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │             │ Users get logged out     │ │ 
+                                                                 │             │ when two tabs refresh at │ │ 
+   ● Write fuzzy-search TUI spec                        3h ago   │ latest ───────────────────────── ↑ older │ 
+      claudes                                          19 msgs   │ │ not shared, so two       │             │ 
+                                                                 │ │ callers race. I memoized │             │ 
+   ● Investigate flaky e2e: program-join.spec           5h ago   │ │ it per session and added │             │ 
+      chronus-web  test/stabilize-e2e [primary]        64 msgs   │ │ a regression test; all   │             │ 
+  Yesterday ──────────────────────────────────────────────────   │ │ auth specs pass.         │             │ 
+   ● Terraform: bump RDS to 16                          1d ago   │ ╰──────────────────────────╯             │ 
+      prod  main                                       33 msgs   │ touched src/auth/middleware.ts  src/aut… │ 
                                                                  │ resume ───────────────────────────────── │ 
    ● Explain webhook retry backoff                      1d ago   │  cd ~/code/chronus-api.worktrees/auth-r… │ 
       chronus-api  main [primary]                        1 msg   │  claude --resume 7f3a1c9e-4d21-4b8a-9e0… │ 

@@ -30,14 +30,25 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func turn(prompt, reply string, at time.Time) []Msg {
+	var out []Msg
+	if prompt != "" {
+		out = append(out, Msg{User: true, Text: prompt, At: at})
+	}
+	if reply != "" {
+		out = append(out, Msg{Text: reply, At: at})
+	}
+	return out
+}
+
 func fixtures() []Session {
 	ago := func(d time.Duration) time.Time { return fixedNow.Add(-d) }
 	mk := func(id, title, cwd, branch string, g gitInfo, upd time.Duration, n int, prompt, reply string, files ...string) Session {
 		return Session{ID: id, Title: title, Cwd: cwd, Branch: branch, gitInfo: g, Updated: ago(upd), Started: ago(upd + 2*time.Hour),
-			Msgs: n, LastPrompt: prompt, LastReply: reply, Files: files}
+			Msgs: n, LastPrompt: prompt, Tail: turn(prompt, reply, ago(upd)), Files: files}
 	}
 	first := func(s Session, prompt, reply string) Session {
-		s.FirstText, s.FirstReply = prompt, reply
+		s.FirstText, s.Head = prompt, turn(prompt, reply, s.Started)
 		return s
 	}
 	return []Session{

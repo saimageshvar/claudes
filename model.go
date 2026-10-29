@@ -29,18 +29,20 @@ const (
 var tabNames = []string{"All", "Today", "This week", "Worktrees"}
 var tabCountStyle = []lipgloss.Style{sAccent, sCyan, sAmber, sPink}
 
-type keyMap struct{ Nav, Open, Tab, Preview, Esc, Up, Down, PgUp, PgDown key.Binding }
+type keyMap struct{ Nav, Open, Tab, Preview, Esc, Up, Down, PgUp, PgDown, ChatUp, ChatDown key.Binding }
 
 var keys = keyMap{
-	Nav:     key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑↓", "navigate")),
-	Open:    key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "resume")),
-	Tab:     key.NewBinding(key.WithKeys("tab", "shift+tab"), key.WithHelp("tab", "filter")),
-	Preview: key.NewBinding(key.WithKeys("ctrl+p"), key.WithHelp("ctrl+p", "preview")),
-	Esc:     key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "clear / quit")),
-	Up:      key.NewBinding(key.WithKeys("up", "ctrl+k")),
-	Down:    key.NewBinding(key.WithKeys("down", "ctrl+n", "ctrl+j")),
-	PgUp:    key.NewBinding(key.WithKeys("pgup")),
-	PgDown:  key.NewBinding(key.WithKeys("pgdown")),
+	Nav:      key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑↓", "navigate")),
+	Open:     key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "resume")),
+	Tab:      key.NewBinding(key.WithKeys("tab", "shift+tab"), key.WithHelp("tab", "filter")),
+	Preview:  key.NewBinding(key.WithKeys("ctrl+p"), key.WithHelp("ctrl+p", "preview")),
+	Esc:      key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "clear / quit")),
+	Up:       key.NewBinding(key.WithKeys("up", "ctrl+k")),
+	Down:     key.NewBinding(key.WithKeys("down", "ctrl+n", "ctrl+j")),
+	PgUp:     key.NewBinding(key.WithKeys("pgup")),
+	PgDown:   key.NewBinding(key.WithKeys("pgdown")),
+	ChatUp:   key.NewBinding(key.WithKeys("shift+up")),
+	ChatDown: key.NewBinding(key.WithKeys("shift+down")),
 }
 
 type (
@@ -60,7 +62,11 @@ type model struct {
 	base        int // sessions in the current tab
 	input       textinput.Model
 	list        list.Model
-	vp          viewport.Model
+	head, tail  viewport.Model // how it started (scrolls down to newer) and the latest messages (scrolls up to older)
+	pvTop       []string
+	pvBot       []string
+	headOn      bool
+	tailOn      bool
 	sp          spinner.Model
 	w, h        int
 	showPreview bool
@@ -80,7 +86,7 @@ func newModel() *model {
 	in.PlaceholderStyle = sDim
 	in.TextStyle = sFg
 	in.Focus()
-	m := &model{input: in, vp: viewport.New(0, 0), showPreview: true}
+	m := &model{input: in, head: viewport.New(0, 0), tail: viewport.New(0, 0), showPreview: true}
 	l := list.New(nil, delegate{m}, 0, 0)
 	l.SetShowTitle(false)
 	l.SetShowStatusBar(false)
@@ -113,8 +119,6 @@ func (m *model) cardW() int { return m.w - 2 - listWW - gapW }
 
 func (m *model) layout() {
 	m.list.SetSize(m.listW(), max(m.bodyH()/rowH, 1)*rowH)
-	m.vp.Width = max(m.cardW()-2, 1)
-	m.vp.Height = max(m.bodyH()-2, 1)
 	m.refreshPreview()
 }
 
@@ -171,13 +175,90 @@ func (m *model) selected() *Session {
 	return nil
 }
 
+func (m *model) pvW() int { return max(m.cardW()-2, 1) }
+
+// refreshPreview rebuilds the card for the selected session and splits the rows between the head and tail panes.
 func (m *model) refreshPreview() {
-	lines := previewLines(m.selected(), m.vp.Width, m.vp.Height)
-	for len(lines) < m.vp.Height {
-		lines = append(lines, pad(m.vp.Width, cCardBg))
+	m.pvTop, m.pvBot, m.headOn, m.tailOn = nil, nil, false, false
+	m.head.Height, m.tail.Height = 0, 0
+	s := m.selected()
+	if s == nil {
+		return
 	}
-	m.vp.SetContent(strings.Join(lines, "\n"))
-	m.vp.GotoTop()
+	w, h := m.pvW(), max(m.bodyH()-2, 1)
+	tw := w - 2
+	m.head.Width, m.tail.Width = w, w
+	m.pvTop, m.pvBot = previewTop(s, tw), previewBottom(s, tw)
+	head, tail := chat(s.Head, tw), chat(s.Tail, tw)
+	m.headOn, m.tailOn = len(head) > 0, len(tail) > 0
+
+	rows := h - len(m.pvTop) - len(m.pvBot)
+	for _, on := range []bool{m.headOn, m.tailOn} {
+		if on {
+			rows-- // its rule
+		}
+	}
+	rows = max(rows, 0)
+	switch {
+	case m.headOn && m.tailOn:
+		m.head.Height = rows * 2 / 5
+		if rows >= 6 {
+			m.head.Height = max(m.head.Height, 3)
+		}
+		m.tail.Height = rows - m.head.Height
+	case m.headOn:
+		m.head.Height = rows
+	case m.tailOn:
+		m.tail.Height = rows
+	}
+	blank := cardRow(tw, nil)
+	fill := func(rows []string, n int, top bool) string {
+		var gap []string
+		for i := len(rows); i < n; i++ {
+			gap = append(gap, blank)
+		}
+		if top {
+			return strings.Join(append(gap, rows...), "\n")
+		}
+		return strings.Join(append(rows, gap...), "\n")
+	}
+	m.head.SetContent(fill(head, m.head.Height, false))
+	m.tail.SetContent(fill(tail, m.tail.Height, true))
+	m.head.GotoTop()
+	m.tail.GotoBottom()
+}
+
+// cardLines is the card interior: header, the two chat panes under their rules, then the pinned foot.
+func (m *model) cardLines() []string {
+	tw := m.pvW() - 2
+	lines := append([]string{}, m.pvTop...)
+	if m.headOn && m.head.Height > 0 {
+		label, hint := "conversation", ""
+		if m.tailOn {
+			label = "how it started"
+		}
+		if !m.head.AtBottom() {
+			hint = "↓ newer"
+		}
+		lines = append(lines, cardRule(tw, label, sCyan, hint))
+		lines = append(lines, strings.Split(m.head.View(), "\n")...)
+	}
+	if m.tailOn && m.tail.Height > 0 {
+		hint := ""
+		if !m.tail.AtTop() {
+			hint = "↑ older"
+		}
+		lines = append(lines, cardRule(tw, "latest", sPink, hint))
+		lines = append(lines, strings.Split(m.tail.View(), "\n")...)
+	}
+	if len(m.pvTop) > 0 && !m.headOn && !m.tailOn {
+		lines = append(lines, cardRow(tw, []span{sp("No chat text captured for this session.", sDim)}))
+	}
+	blank := cardRow(tw, nil)
+	for len(lines)+len(m.pvBot) < m.bodyH()-2 {
+		lines = append(lines, blank)
+	}
+	return append(lines, m.pvBot...)
 }
 
 func (m *model) queryChanged() tea.Cmd {
@@ -310,8 +391,12 @@ func (m *model) mouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case msg.Button == tea.MouseButtonWheelUp || msg.Button == tea.MouseButtonWheelDown:
 		if inCard {
+			pane := &m.tail
+			if m.headOn && msg.Y-bodyTop-1 < len(m.pvTop)+1+m.head.Height {
+				pane = &m.head
+			}
 			var c tea.Cmd
-			m.vp, c = m.vp.Update(msg)
+			*pane, c = pane.Update(msg)
 			return m, c
 		}
 		if msg.Button == tea.MouseButtonWheelUp {
@@ -472,7 +557,7 @@ func (m *model) View() string {
 	out = append(out, blank)
 	left := m.listColumn()
 	if m.wide() {
-		right := strings.Split(card(strings.Split(m.vp.View(), "\n"), m.cardW(), m.bodyH()), "\n")
+		right := strings.Split(card(m.cardLines(), m.cardW(), m.bodyH()), "\n")
 		for i := range left {
 			out = append(out, " "+left[i]+strings.Repeat(" ", gapW)+right[i]+" ")
 		}

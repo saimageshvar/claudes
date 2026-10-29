@@ -47,9 +47,9 @@ type Session struct {
 	Branch     string
 	Title      string
 	FirstText  string
-	FirstReply string
 	LastPrompt string
-	LastReply  string
+	Head       []Msg
+	Tail       []Msg
 	Files      []string
 	Started    time.Time
 	Updated    time.Time
@@ -65,6 +65,13 @@ type gitInfo struct {
 	Primary bool   // main checkout of a repo that has linked worktrees
 	NoGit   bool   // the folder exists and is not a git repo
 	Checked int64
+}
+
+// Msg is one chat turn kept for the preview: your prompt, or Claude's consecutive text blocks merged.
+type Msg struct {
+	User bool
+	Text string
+	At   time.Time
 }
 
 type cacheEntry struct {
@@ -165,7 +172,7 @@ func parseSession(path string, info os.FileInfo) *Session {
 	var customTitle, aiTitle, summary string
 	var files []string
 	seenFile := map[string]bool{}
-	lastHuman := func(chunk []byte, isHead bool) {
+	collect := func(chunk []byte, into *[]Msg) {
 		for _, line := range bytes.Split(chunk, []byte{'\n'}) {
 			switch {
 			case bytes.HasPrefix(line, []byte(`{"type":"custom-title"`)):
@@ -194,8 +201,9 @@ func parseSession(path string, info os.FileInfo) *Session {
 				if r.GitBranch != "" {
 					s.Branch = r.GitBranch
 				}
-				if t, err := time.Parse(time.RFC3339, r.Timestamp); err == nil && s.Started.IsZero() {
-					s.Started = t
+				at, err := time.Parse(time.RFC3339, r.Timestamp)
+				if err == nil && s.Started.IsZero() {
+					s.Started = at
 				}
 				switch r.Type {
 				case "user":
@@ -208,16 +216,18 @@ func parseSession(path string, info os.FileInfo) *Session {
 								s.FirstText = b.Text
 							}
 							s.LastPrompt = b.Text
+							*into = append(*into, Msg{User: true, Text: capText(b.Text), At: at})
 						}
 					}
 				case "assistant":
 					for _, b := range blocks(r.Message.Content) {
 						switch {
 						case b.Type == "text" && strings.TrimSpace(b.Text) != "":
-							if s.FirstReply == "" && s.FirstText != "" {
-								s.FirstReply = b.Text
+							if n := len(*into); n > 0 && !(*into)[n-1].User {
+								(*into)[n-1].Text = capText((*into)[n-1].Text + "\n\n" + b.Text)
+							} else {
+								*into = append(*into, Msg{Text: capText(b.Text), At: at})
 							}
-							s.LastReply = b.Text
 						case b.Type == "tool_use" && (b.Name == "Edit" || b.Name == "Write") && b.Input.FilePath != "":
 							if !seenFile[b.Input.FilePath] {
 								seenFile[b.Input.FilePath] = true
@@ -229,24 +239,27 @@ func parseSession(path string, info os.FileInfo) *Session {
 			}
 		}
 	}
-	lastHuman(head, true)
-	headPrompt, firstReply := s.LastPrompt, s.FirstReply
-	defer func() { s.FirstReply = firstReply }() // a later window's reply is not how the session started
+	var headMsgs, tailMsgs []Msg
+	collect(head, &headMsgs)
+	headPrompt := s.LastPrompt
 	s.LastPrompt = ""
-	lastHuman(tail, false)
+	collect(tail, &tailMsgs)
 	// Big tool results (images, logs) can fill the tail window; walk back until the latest human prompt shows up.
 	if tail != nil && s.LastPrompt == "" {
-		branch, reply := s.Branch, s.LastReply
+		branch := s.Branch
 		for end, read := info.Size()-tailBytes, int64(0); end > headBytes && read < maxBackScan && s.LastPrompt == ""; end, read = end-tailBytes, read+tailBytes {
 			if chunk := readWindow(path, max(end-tailBytes, headBytes), end); chunk != nil {
-				lastHuman(chunk, false)
+				var older []Msg
+				collect(chunk, &older)
+				tailMsgs = append(older, tailMsgs...)
 			}
 		}
-		s.Branch, s.LastReply = branch, reply
+		s.Branch = branch
 	}
 	if s.LastPrompt == "" {
 		s.LastPrompt = headPrompt
 	}
+	s.Head, s.Tail = splitChat(headMsgs, tailMsgs, tail == nil)
 	if len(files) > maxFiles {
 		files = files[len(files)-maxFiles:]
 	}
@@ -347,7 +360,7 @@ type index struct {
 
 func cachePath() string {
 	d, _ := os.UserCacheDir()
-	return filepath.Join(d, "claudes", "index-v5.json")
+	return filepath.Join(d, "claudes", "index-v6.json")
 }
 
 func keep(s *Session) bool {
@@ -498,4 +511,38 @@ func readLine(r *bufio.Reader) ([]byte, error) {
 			return line, err
 		}
 	}
+}
+
+const (
+	msgRunes = 360
+	keepMsgs = 14
+	// shortChat is the most messages a fully-read session shows in one pane instead of split head and tail panes.
+	shortChat = 8
+)
+
+func capText(t string) string {
+	t = strings.TrimSpace(t)
+	if r := []rune(t); len(r) > msgRunes {
+		return string(r[:msgRunes]) + "…"
+	}
+	return t
+}
+
+// splitChat picks the head and tail messages for the preview; a fully read session (whole) is one chat that is
+// split in half so the two panes never repeat a message.
+func splitChat(head, tail []Msg, whole bool) (h, t []Msg) {
+	if whole {
+		if len(head) <= shortChat {
+			return head, nil
+		}
+		half := len(head) / 2
+		head, tail = head[:half], head[half:]
+	}
+	if len(head) > keepMsgs {
+		head = head[:keepMsgs]
+	}
+	if len(tail) > keepMsgs {
+		tail = tail[len(tail)-keepMsgs:]
+	}
+	return head, tail
 }

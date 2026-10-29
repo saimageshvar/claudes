@@ -10,18 +10,18 @@
                                                                  │  chronus-api  feat/auth-refresh  wt auth-refresh                       │ 
                                                                  │ ~/code/chronus-api.worktrees/auth-refresh                              │ 
                                                                  │ 48 msgs · started Wed Oct 28, 07:12                                    │ 
+                                                                 │ how it started ─────────────────────────────────────────────── ↓ newer │ 
+                                                                 │                      ╭ you · Oct 28 07:12 ───────────────────────────╮ │ 
+                                                                 │                      │ Users get logged out when two tabs refresh at │ │ 
+                                                                 │                      │ the same time. Find out why the refresh token │ │ 
+                                                                 │ latest ─────────────────────────────────────────────────────── ↑ older │ 
                                                                  │                                                                        │ 
-                                                                 │ how it started ─────────────────────────────────────────────────────── │ 
-                                                                 │ ▎ you                                                                  │ 
-                                                                 │ ▎ Users get logged out when two tabs refresh at the same time. Find…   │ 
-                                                                 │ where you left off ─────────────────────────────────────────────────── │ 
-                                                                 │ ▎ you                                                                  │ 
-                                                                 │ ▎ Why does the second request still send the old token?                │ 
-                                                                 │ ▎ claude                                                               │ 
-                                                                 │ ▎ The refresh promise is not shared, so two callers race. I memoized…  │ 
-                                                                 │                                                                        │ 
+                                                                 │ ╭ claude · Oct 28 09:12 ────────────────────────╮                      │ 
+                                                                 │ │ The refresh promise is not shared, so two     │                      │ 
+                                                                 │ │ callers race. I memoized it per session and   │                      │ 
+                                                                 │ │ added a regression test; all auth specs pass. │                      │ 
+                                                                 │ ╰───────────────────────────────────────────────╯                      │ 
                                                                  │ touched src/auth/middleware.ts  src/auth/refresh.ts +1                 │ 
-                                                                 │                                                                        │ 
                                                                  │ resume ─────────────────────────────────────────────────────────────── │ 
                                                                  │  cd ~/code/chronus-api.worktrees/auth-refresh                          │ 
                                                                  │  claude --resume 7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f                  │ 
