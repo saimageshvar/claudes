@@ -8,7 +8,7 @@ cached in `~/Library/Caches/claudes/index-v6.json` (the OS cache dir), so launch
 
 ## Install
 
-Needs `git` and Go.
+Needs `git` and Go 1.21+ (it fetches the exact toolchain `go.mod` asks for). For a custom directory, use `bash -s -- /some/dir` instead of `bash`.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/saimageshvar/claudes/master/install.sh | bash

@@ -4,6 +4,7 @@ set -euo pipefail
 for c in git go; do command -v "$c" >/dev/null || { echo "$c is required" >&2; exit 1; }; done
 dest=${1:-$HOME/.local/bin}
 mkdir -p "$dest"
+dest=$(cd "$dest" && pwd)
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 git clone -q --depth 1 https://github.com/saimageshvar/claudes.git "$tmp"
