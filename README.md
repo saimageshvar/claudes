@@ -8,10 +8,10 @@ cached in `~/Library/Caches/claudes/index-v6.json` (the OS cache dir), so launch
 
 ## Install
 
-Needs `gh` (authenticated with access to this repo) and Go.
+Needs `git` and Go.
 
 ```sh
-gh api repos/saimageshvar/claudes/contents/install.sh -H 'Accept: application/vnd.github.raw' | bash
+curl -fsSL https://raw.githubusercontent.com/saimageshvar/claudes/master/install.sh | bash
 ```
 
 Builds from source into `~/.local/bin/claudes`.
