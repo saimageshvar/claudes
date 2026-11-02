@@ -7,24 +7,24 @@
    ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refre… │ 
       chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 7:12 AM    │ 
                                                                  │  how it started                  ↓ newer │ 
-   ● Archie chat: streaming render jank                 1h ago   │             ╭ you · Oct 28 7:12 AM ────╮ │ 
-      chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │             │ Users get logged out     │ │ 
-                                                                 │             │ when two tabs refresh at │ │ 
-   ● Write fuzzy-search TUI spec                        3h ago   │             │ the same time. Find out  │ │ 
-      claudes                                          19 msgs   │             │ why the refresh token is │ │ 
-                                                                 │             │ reused and fix it        │ │ 
-   ● Investigate flaky e2e: program-join.spec           5h ago   │             │ without changing the     │ │ 
-      chronus-web  test/stabilize-e2e [primary]        64 msgs   │  latest                          ↑ older │ 
-  Yesterday ──────────────────────────────────────────────────   │               │ request still send the │ │ 
-   ● Terraform: bump RDS to 16                          1d ago   │               │ old token?             │ │ 
-      prod  main                                       33 msgs   │               ╰────────────────────────╯ │ 
-                                                                 │                                          │ 
-   ● Explain webhook retry backoff                      1d ago   │ ╭ claude · Oct 28 9:12 AM ─╮             │ 
-      chronus-api  main [primary]                        1 msg   │ │ The refresh promise is   │             │ 
-  This week ──────────────────────────────────────────────────   │ │ not shared, so two       │             │ 
-   ● Review PR 2841: mentor availability with a delib…  4d ago   │ │ callers race. I memoized │             │ 
-      chronus-web  feat/availability-and-a-very-long-… 41 msgs   │ │ it per session and added │             │ 
-  Older ──────────────────────────────────────────────────────   │ │ a regression test; all   │             │ 
-   ● Old notes                                          5w ago   │ │ auth specs pass.         │             │ 
-      notes                                             3 msgs   │ ╰──────────────────────────╯             │ 
+   ● Archie chat: streaming render jank                 1h ago   │       ╭ you · Oct 28 7:12 AM ──────────╮ │ 
+      chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │       │ Users get logged out when two  │ │ 
+                                                                 │       │ tabs refresh at the same time. │ │ 
+   ● Write fuzzy-search TUI spec                        3h ago   │       │ Find out why the refresh token │ │ 
+      claudes                                          19 msgs   │       │ is reused and fix it without   │ │ 
+                                                                 │       │ changing the session cookie    │ │ 
+   ● Investigate flaky e2e: program-join.spec           5h ago   │       │ format.                        │ │ 
+      chronus-web  test/stabilize-e2e [primary]        64 msgs   │  latest                                  │ 
+  Yesterday ──────────────────────────────────────────────────   │          ╭ you · Oct 28 9:12 AM ───────╮ │ 
+   ● Terraform: bump RDS to 16                          1d ago   │          │ Why does the second request │ │ 
+      prod  main                                       33 msgs   │          │ still send the old token?   │ │ 
+                                                                 │          ╰─────────────────────────────╯ │ 
+   ● Explain webhook retry backoff                      1d ago   │                                          │ 
+      chronus-api  main [primary]                        1 msg   │ ╭ claude · Oct 28 9:12 AM ───────╮       │ 
+  This week ──────────────────────────────────────────────────   │ │ The refresh promise is not     │       │ 
+   ● Review PR 2841: mentor availability with a delib…  4d ago   │ │ shared, so two callers race. I │       │ 
+      chronus-web  feat/availability-and-a-very-long-… 41 msgs   │ │ memoized it per session and    │       │ 
+  Older ──────────────────────────────────────────────────────   │ │ added a regression test; all   │       │ 
+   ● Old notes                                          5w ago   │ │ auth specs pass.               │       │ 
+      notes                                             3 msgs   │ ╰────────────────────────────────╯       │ 
                                                                  ╰──────────────────────────────────────────╯ 

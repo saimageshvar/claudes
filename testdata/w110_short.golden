@@ -7,10 +7,10 @@
    ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refre… │ 
       chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 7:12 AM    │ 
                                                                  │  how it started                  ↓ newer │ 
-   ● Archie chat: streaming render jank                 1h ago   │             ╭ you · Oct 28 7:12 AM ────╮ │ 
-      chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │             │ Users get logged out     │ │ 
+   ● Archie chat: streaming render jank                 1h ago   │       ╭ you · Oct 28 7:12 AM ──────────╮ │ 
+      chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │       │ Users get logged out when two  │ │ 
                                                                  │  latest                          ↑ older │ 
-   ● Write fuzzy-search TUI spec                        3h ago   │ │ a regression test; all   │             │ 
-      claudes                                          19 msgs   │ │ auth specs pass.         │             │ 
-                                                                 │ ╰──────────────────────────╯             │ 
+   ● Write fuzzy-search TUI spec                        3h ago   │ │ added a regression test; all   │       │ 
+      claudes                                          19 msgs   │ │ auth specs pass.               │       │ 
+                                                                 │ ╰────────────────────────────────╯       │ 
                                                                  ╰──────────────────────────────────────────╯ 

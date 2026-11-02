@@ -75,7 +75,7 @@ func cardRule(tw int, label string, st lipgloss.Style, hint string) string {
 
 // bubble draws one message as a rounded box: yours on the right, Claude's on the left, sized to its text.
 func bubble(m Msg, tw int) []string {
-	maxW := max(tw*72/100, 18)
+	maxW := max(tw-4, 18) // nearly full width; the 4 spare cells keep the left/right chat feel
 	lines := wrap(clean(m.Text), maxW-4, 9)
 	if len(lines) == 0 {
 		return nil
