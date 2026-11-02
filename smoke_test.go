@@ -20,6 +20,6 @@ func TestLoadAndSearch(t *testing.T) {
 		t.Logf("%s | %s | repo=%s branch=%s linked=%q primary=%v msgs=%d", s.ID[:8], s.Title, s.Repo, s.Branch, s.Linked, s.Primary, s.Msgs)
 	}
 	st = time.Now()
-	hits := transcriptHits(ss, []string{"json-render"}, func() bool { return false })
+	hits := transcriptHits(ss, "json-render", func() bool { return false })
 	t.Logf("%d sessions, %d hits in %v", len(ss), len(hits), time.Since(st))
 }

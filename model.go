@@ -57,7 +57,7 @@ type (
 	}
 	hitsMsg struct {
 		seq int64
-		ids map[string]bool
+		ids map[string][]Snippet
 	}
 )
 
@@ -71,6 +71,7 @@ type model struct {
 	head, tail  viewport.Model // how it started (scrolls down to newer) and the latest messages (scrolls up to older)
 	pvTop       []string
 	pvBot       []string
+	pvMatch     []string // the matches band: transcript lines hitting the query
 	headOn      bool
 	tailOn      bool
 	chats       map[string][]Msg // full transcripts of sessions viewed, by chatKey
@@ -80,7 +81,7 @@ type model struct {
 	showPreview bool
 	seq         atomic.Int64
 	searching   bool
-	hits        map[string]bool
+	hits        map[string][]Snippet // transcript lines matching the query, by session id
 	tabX        [][2]int
 	lastClick   time.Time
 	lastIdx     int
@@ -157,7 +158,7 @@ func (m *model) refilter() {
 		seen[r.s] = true
 	}
 	for _, s := range base {
-		if m.hits[s.ID] && !seen[s] {
+		if len(m.hits[s.ID]) > 0 && !seen[s] {
 			c := *s
 			c.InTx = true
 			ranked = append(ranked, match{s: &c})
@@ -188,7 +189,7 @@ func (m *model) pvW() int { return max(m.cardW()-2, 1) }
 
 // refreshPreview rebuilds the card for the selected session and splits the rows between the head and tail panes.
 func (m *model) refreshPreview() {
-	m.pvTop, m.pvBot, m.headOn, m.tailOn = nil, nil, false, false
+	m.pvTop, m.pvBot, m.pvMatch, m.headOn, m.tailOn = nil, nil, nil, false, false
 	m.head.Height, m.tail.Height = 0, 0
 	s := m.selected()
 	if s == nil {
@@ -215,6 +216,10 @@ func (m *model) refreshPreview() {
 		}
 	}
 	rows = max(rows, 0)
+	if snips := m.hits[s.ID]; len(snips) > 0 && rows >= 6 {
+		m.pvMatch = matchBand(snips, tw, rows*2/5)
+		rows -= len(m.pvMatch)
+	}
 	switch {
 	case m.headOn && m.tailOn:
 		m.head.Height = rows * 2 / 5
@@ -247,7 +252,7 @@ func (m *model) refreshPreview() {
 // cardLines is the card interior: header, the two chat panes under their rules, then the pinned foot.
 func (m *model) cardLines() []string {
 	tw := m.pvW() - 2
-	lines := append([]string{}, m.pvTop...)
+	lines := append(append([]string{}, m.pvTop...), m.pvMatch...)
 	if m.headOn && m.head.Height > 0 {
 		label, hint := "conversation", ""
 		if m.tailOn {
@@ -290,13 +295,13 @@ func (m *model) queryChanged() tea.Cmd {
 }
 
 func (m *model) search(seq int64) tea.Cmd {
-	terms := []string{strings.Join(strings.Fields(m.input.Value()), " ")}
+	query := m.input.Value()
 	all := m.all
 	return func() tea.Msg {
-		hits := transcriptHits(all, terms, func() bool { return m.seq.Load() != seq })
-		ids := map[string]bool{}
-		for i := range hits {
-			ids[all[i].ID] = true
+		hits := transcriptHits(all, query, func() bool { return m.seq.Load() != seq })
+		ids := map[string][]Snippet{}
+		for i, sn := range hits {
+			ids[all[i].ID] = sn
 		}
 		return hitsMsg{seq, ids}
 	}
@@ -444,7 +449,7 @@ func (m *model) mouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 	case msg.Button == tea.MouseButtonWheelUp || msg.Button == tea.MouseButtonWheelDown:
 		if inCard {
 			pane := &m.tail
-			if m.headOn && msg.Y-bodyTop-1 < len(m.pvTop)+1+m.head.Height {
+			if m.headOn && msg.Y-bodyTop-1 < len(m.pvTop)+len(m.pvMatch)+1+m.head.Height {
 				pane = &m.head
 			}
 			var c tea.Cmd

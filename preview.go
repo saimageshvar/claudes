@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -172,4 +173,110 @@ func card(lines []string, w, h int) string {
 		out = append(out, side+l+side)
 	}
 	return strings.Join(append(out, bot), "\n")
+}
+
+// snippetRows lays one matching line out as at most two rows under a who-said-it tag, hit highlighted; the window
+// is trimmed (before the hit first) so the hit always stays on screen.
+func snippetRows(sn Snippet, tw int) []string {
+	const tagW = 8
+	w := max(tw-tagW, 8)
+	pre, hit, post := []rune(sn.Pre), []rune(sn.Hit), []rune(sn.Post)
+	if over := len(pre) + len(hit) + len(post) - (2*w - 2); over > 0 {
+		if cut := min(over, len(pre)-1); cut > 0 {
+			pre, over = append([]rune("…"), pre[cut+1:]...), over-cut
+		}
+		if over > 0 && len(post) > over {
+			post = append(post[:len(post)-over-1], '…')
+		}
+	}
+	type cell struct {
+		r   rune
+		hit bool
+	}
+	var cells []cell
+	for _, r := range pre {
+		cells = append(cells, cell{r, false})
+	}
+	for _, r := range hit {
+		cells = append(cells, cell{r, true})
+	}
+	for _, r := range post {
+		cells = append(cells, cell{r, false})
+	}
+	var lines [][]cell
+	var cur []cell
+	cw := 0
+	for _, c := range cells {
+		rw := runewidth.RuneWidth(c.r)
+		if cw+rw > w && len(lines) < 1 {
+			var carry []cell // wrap at the last space when it is not too far back
+			for i := len(cur) - 1; i > len(cur)/2; i-- {
+				if cur[i].r == ' ' {
+					cur, carry = cur[:i], append(carry, cur[i+1:]...)
+					break
+				}
+			}
+			lines, cur, cw = append(lines, cur), carry, 0
+			for _, c := range carry {
+				cw += runewidth.RuneWidth(c.r)
+			}
+		}
+		cur, cw = append(cur, c), cw+rw
+	}
+	lines = append(lines, cur)
+
+	tag, tagSt := "claude", sPink.Bold(true)
+	if sn.User {
+		tag, tagSt = "you", sAccent.Bold(true)
+	}
+	var out []string
+	for li, ln := range lines {
+		lead := strings.Repeat(" ", tagW)
+		if li == 0 {
+			lead = tag + strings.Repeat(" ", tagW-len(tag))
+		}
+		spans := []span{sp(lead, tagSt)}
+		for i := 0; i < len(ln); {
+			j := i
+			for j < len(ln) && ln[j].hit == ln[i].hit {
+				j++
+			}
+			var b strings.Builder
+			for _, c := range ln[i:j] {
+				b.WriteRune(c.r)
+			}
+			st := sFg
+			if ln[i].hit {
+				st = sHit
+			}
+			spans = append(spans, sp(b.String(), st))
+			i = j
+		}
+		out = append(out, cardRow(tw, spans))
+	}
+	return out
+}
+
+// matchBand is the "matches" band plus as many snippets as fit in budget rows (band included).
+func matchBand(snips []Snippet, tw, budget int) []string {
+	var body []string
+	shown := 0
+	for _, sn := range snips {
+		rows := snippetRows(sn, tw)
+		if len(body)+len(rows)+1 > budget {
+			break
+		}
+		body, shown = append(body, rows...), shown+1
+	}
+	if shown == 0 {
+		return nil
+	}
+	hint := fmt.Sprintf("%d lines", len(snips))
+	switch {
+	case shown < len(snips):
+		hint = fmt.Sprintf("%d of %d lines", shown, len(snips))
+	case shown == 1:
+		hint = "1 line"
+	}
+	return append([]string{cardRule(tw, "matches", sAmber, hint)}, body...)
 }

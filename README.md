@@ -20,7 +20,7 @@ Builds from source into `~/.local/bin/claudes`.
 
 | Key | Action |
 |---|---|
-| type | filter immediately; space-separated words must all match title, folder, branch or worktree name; 2+ letters also search everything said in the transcript |
+| type | filter immediately; space-separated words must all match title, folder, branch or worktree name; 2+ letters also search everything said in the transcript; the preview then shows a `matches` band with up to 5 matching lines, tagged by who said them |
 | `↑` `↓` | move |
 | `pgup` `pgdown` | previous / next page |
 | `enter` | resume the selected session |

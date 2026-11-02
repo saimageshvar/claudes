@@ -12,6 +12,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
+	"unicode/utf8"
 )
 
 const (
@@ -428,15 +430,74 @@ func loadSessions() []Session {
 	return out
 }
 
-// transcriptHits returns the indexes of sessions whose user/assistant lines
-// contain every term (case-insensitive); cancelled() aborts early.
-func transcriptHits(sessions []Session, terms []string, cancelled func() bool) map[int]bool {
-	lower := make([][]byte, len(terms))
-	for i, t := range terms {
-		lower[i] = []byte(strings.ToLower(t))
+// Snippet is one matching line of a transcript: the text around the first hit in a message, split so the hit can
+// be highlighted.
+type Snippet struct {
+	User           bool
+	Pre, Hit, Post string
+}
+
+const (
+	maxSnippets = 5
+	snipBefore  = 50
+	snipAfter   = 60
+)
+
+func foldRunes(s string) []rune {
+	rs := []rune(s)
+	for i, r := range rs {
+		rs[i] = unicode.ToLower(r)
 	}
-	want := 1<<len(terms) - 1
-	hits := map[int]bool{}
+	return rs
+}
+
+// snippetOf cuts a window around the first case-insensitive hit of phrase (already folded) in text.
+func snippetOf(user bool, text string, phrase []rune) (Snippet, bool) {
+	rs := []rune(strings.Join(strings.Fields(text), " "))
+	lo := foldRunes(string(rs))
+	idx := strings.Index(string(lo), string(phrase))
+	if idx < 0 {
+		return Snippet{}, false
+	}
+	at := utf8.RuneCountInString(string(lo)[:idx])
+	from, to := max(at-snipBefore, 0), min(at+len(phrase)+snipAfter, len(rs))
+	if from > 0 { // start and end on whole words
+		for i := from; i < at && i < from+15; i++ {
+			if rs[i] == ' ' {
+				from = i + 1
+				break
+			}
+		}
+	}
+	if end := at + len(phrase); to < len(rs) {
+		for i := to; i > end && i > to-15; i-- {
+			if rs[i] == ' ' {
+				to = i
+				break
+			}
+		}
+	}
+	sn := Snippet{User: user, Pre: string(rs[from:at]), Hit: string(rs[at : at+len(phrase)]), Post: string(rs[at+len(phrase) : to])}
+	if from > 0 {
+		sn.Pre = "…" + sn.Pre
+	}
+	if to < len(rs) {
+		sn.Post += "…"
+	}
+	return sn, true
+}
+
+// transcriptHits scans each session's transcript for the phrase in what you and Claude said (tool output is
+// ignored) and returns up to maxSnippets matching lines per session, keyed by index into sessions.
+func transcriptHits(sessions []Session, query string, cancelled func() bool) map[int][]Snippet {
+	phrase := foldRunes(strings.Join(strings.Fields(query), " "))
+	// JSON escapes quotes, backslashes and non-ASCII, so the raw-line prefilter only applies to plain phrases.
+	raw := []byte(strings.ToLower(string(phrase)))
+	plain := !strings.ContainsAny(string(phrase), "\"\\") && len(raw) == len(phrase)
+	hits := map[int][]Snippet{}
+	if len(phrase) == 0 {
+		return hits
+	}
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, 8)
@@ -452,30 +513,45 @@ func transcriptHits(sessions []Session, terms []string, cancelled func() bool) m
 			}
 			defer f.Close()
 			r := bufio.NewReaderSize(f, 1<<20)
-			found := 0
-			for found != want && !cancelled() {
+			var snips []Snippet
+			for len(snips) < maxSnippets && !cancelled() {
 				line, err := readLine(r)
-				if bytes.HasPrefix(line, []byte(`{"parentUuid"`)) && !bytes.Contains(line[:min(200, len(line))], []byte(`"attachment"`)) {
-					lo := bytes.ToLower(line)
-					for k, t := range lower {
-						if bytes.Contains(lo, t) {
-							found |= 1 << k
-						}
-					}
+				if bytes.HasPrefix(line, []byte(`{"parentUuid"`)) && len(line) < maxLineJSON &&
+					(!plain || bytes.Contains(bytes.ToLower(line), raw)) {
+					snips = append(snips, lineSnippets(line, phrase)...)
 				}
 				if err != nil {
 					break
 				}
 			}
-			if found == want {
+			if len(snips) > 0 {
 				mu.Lock()
-				hits[i] = true
+				hits[i] = snips[:min(len(snips), maxSnippets)]
 				mu.Unlock()
 			}
 		}()
 	}
 	wg.Wait()
 	return hits
+}
+
+// lineSnippets decodes one transcript line and returns snippets for its human prompt or Claude text.
+func lineSnippets(line []byte, phrase []rune) []Snippet {
+	var rec record
+	if json.Unmarshal(line, &rec) != nil || rec.Sidechain {
+		return nil
+	}
+	var out []Snippet
+	for _, b := range blocks(rec.Message.Content) {
+		user := rec.Type == "user" && (rec.Origin == nil || rec.Origin.Kind == "human") && isHumanText(b.Text)
+		if b.Type != "text" || !(user || rec.Type == "assistant") {
+			continue
+		}
+		if sn, ok := snippetOf(user, b.Text, phrase); ok {
+			out = append(out, sn)
+		}
+	}
+	return out
 }
 
 func readLine(r *bufio.Reader) ([]byte, error) {
