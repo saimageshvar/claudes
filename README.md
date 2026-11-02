@@ -3,6 +3,10 @@
 A full-screen picker for Claude Code sessions. Find a session and press enter: `claudes` changes to the
 session's folder and replaces itself with `claude --resume <id>`, in the same pane or tab.
 
+![claudes demo: browsing sessions, fuzzy search, worktree filter, and transcript matches](docs/demo.gif)
+
+<sub>The demo uses made-up sessions, not real ones.</sub>
+
 Sessions come from `~/.claude/projects/*/*.jsonl`. Titles, folders, branches, worktree info and counts are
 cached in `~/Library/Caches/claudes/index-v6.json` (the OS cache dir), so launch is instant after the first run.
 
