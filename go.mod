@@ -1,4 +1,4 @@
-module claudes
+module github.com/saimageshvar/claudes
 
 go 1.27.3
 

@@ -8,13 +8,33 @@ cached in `~/Library/Caches/claudes/index-v6.json` (the OS cache dir), so launch
 
 ## Install
 
-Needs `git` and Go 1.21+ (it fetches the exact toolchain `go.mod` asks for). For a custom directory, use `bash -s -- /some/dir` instead of `bash`.
+macOS or Linux, Intel or ARM. One command (downloads the release binary, verifies its checksum, installs to `~/.local/bin`):
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/saimageshvar/claudes/master/install.sh | bash
 ```
 
-Builds from source into `~/.local/bin/claudes`.
+Then run `claudes`. Tips:
+
+- Another directory: `... | bash -s -- /usr/local/bin`. A specific version: `... | CLAUDES_VERSION=v0.1.0 bash`.
+- If `~/.local/bin` is not on your `PATH`, the installer prints the line to add.
+- Handy alias: `alias cl=claudes`.
+- With Go instead: `go install github.com/saimageshvar/claudes@latest`.
+- Update by running the install command again. Uninstall with `rm -r ~/.local/bin/claudes ~/Library/Caches/claudes` (the cache is `~/.cache/claudes` on Linux).
+
+### Let an AI agent install it
+
+Paste this into Claude Code (or any coding agent with shell access):
+
+```text
+Install claudes on this machine: read https://raw.githubusercontent.com/saimageshvar/claudes/master/INSTALL.md and follow it. Tell me what you installed and where.
+```
+
+`INSTALL.md` is the agent's runbook: it checks prerequisites, runs the installer (or builds from source if there is no release for the platform), verifies `claudes --version`, fixes `PATH`, and offers the `cl` alias.
+
+### Releasing (maintainers)
+
+Push a tag, or run `./release.sh vX.Y.Z` locally with `gh`: it cross-builds the four platform tarballs, writes `checksums.txt`, and publishes the GitHub release. `.github/workflows/release.yml` does the same on any pushed `v*` tag.
 
 ## Keys
 
