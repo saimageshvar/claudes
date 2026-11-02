@@ -1,16 +1,16 @@
-  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                                                     
-                                                                                                              
- ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────╮ 
- │ ❯ search title, folder, branch, or anything said                                                   9 / 9 │ 
- ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯ 
-                                                                                                              
+  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                     enter resume  esc clear / quit  
+ ❯ search title, folder, branch, or anything said                                              ● ○ ○ 1–4 of 9 
   Today ──────────────────────────────────────────────────────   ╭─ preview ────────────────────────────────╮ 
  ▌ ● Fix token refresh race in auth middleware          2m ago   │ Fix token refresh race in auth           │ 
  ▌    chronus-api  feat/auth-refresh  wt auth-refresh  48 msgs   │ middleware                               │ 
                                                                  │  chronus-api  feat/auth-refresh  wt aut… │ 
    ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refre… │ 
       chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 7:12 AM    │ 
-                                                                 │  resume                                  │ 
+                                                                 │  how it started                  ↓ newer │ 
+   ● Archie chat: streaming render jank                 1h ago   │             ╭ you · Oct 28 7:12 AM ────╮ │ 
+      chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │             │ Users get logged out     │ │ 
+                                                                 │  latest                          ↑ older │ 
+   ● Write fuzzy-search TUI spec                        3h ago   │ │ a regression test; all   │             │ 
+      claudes                                          19 msgs   │ │ auth specs pass.         │             │ 
+                                                                 │ ╰──────────────────────────╯             │ 
                                                                  ╰──────────────────────────────────────────╯ 
-                                                                                                              
-  ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit         ● ○ ○ ○ ○ 1–2 of 9 

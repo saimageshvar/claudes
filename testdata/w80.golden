@@ -1,9 +1,5 @@
   ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                       
-                                                                                
- ╭────────────────────────────────────────────────────────────────────────────╮ 
- │ ❯ search title, folder, branch, or anything said                     9 / 9 │ 
- ╰────────────────────────────────────────────────────────────────────────────╯ 
-                                                                                
+ ❯ search title, folder, branch, or anything said                      1–9 of 9 
   Today ──────────────────────────────────────────────────────────────────────  
  ▌ ● Fix token refresh race in auth middleware                          2m ago  
  ▌    chronus-api  feat/auth-refresh  wt auth-refresh                  48 msgs  
@@ -25,6 +21,10 @@
                                                                                 
    ● Explain webhook retry backoff                                      1d ago  
       chronus-api  main [primary]                                        1 msg  
+  This week ──────────────────────────────────────────────────────────────────  
+   ● Review PR 2841: mentor availability with a deliberately very lon…  4d ago  
+      chronus-web  feat/availability-and-a-very-long-branch-name-that… 41 msgs  
+  Older ──────────────────────────────────────────────────────────────────────  
+   ● Old notes                                                          5w ago  
+      notes                                                             3 msgs  
                                                                                 
-                                                                                
-  ↑↓  navigate   enter  resume   tab  filter   esc  clear / quit   ● ○ 1–7 of 9 

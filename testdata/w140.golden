@@ -1,9 +1,5 @@
-  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                                                                                   
-                                                                                                                                            
- ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ 
- │ ❯ search title, folder, branch, or anything said                                                                                 9 / 9 │ 
- ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ 
-                                                                                                                                            
+  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3          ↑↓ navigate  enter resume  tab filter  ctrl+p preview  esc clear / quit  
+ ❯ search title, folder, branch, or anything said                                                                                  1–9 of 9 
   Today ──────────────────────────────────────────────────────   ╭─ preview ──────────────────────────────────────────────────────────────╮ 
  ▌ ● Fix token refresh race in auth middleware          2m ago   │ Fix token refresh race in auth middleware                              │ 
  ▌    chronus-api  feat/auth-refresh  wt auth-refresh  48 msgs   │                                                                        │ 
@@ -15,16 +11,20 @@
       chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │                      │ Users get logged out when two tabs refresh at │ │ 
                                                                  │                      │ the same time. Find out why the refresh token │ │ 
    ● Write fuzzy-search TUI spec                        3h ago   │                      │ is reused and fix it without changing the     │ │ 
-      claudes                                          19 msgs   │  latest                                                        ↑ older │ 
-                                                                 │                                                                        │ 
-   ● Investigate flaky e2e: program-join.spec           5h ago   │ ╭ claude · Oct 28 9:12 AM ──────────────────────╮                      │ 
-      chronus-web  test/stabilize-e2e [primary]        64 msgs   │ │ The refresh promise is not shared, so two     │                      │ 
-  Yesterday ──────────────────────────────────────────────────   │ │ callers race. I memoized it per session and   │                      │ 
-   ● Terraform: bump RDS to 16                          1d ago   │ │ added a regression test; all auth specs pass. │                      │ 
-      prod  main                                       33 msgs   │ ╰───────────────────────────────────────────────╯                      │ 
-                                                                 │  resume                                                                │ 
-   ● Explain webhook retry backoff                      1d ago   │  cd ~/code/chronus-api.worktrees/auth-refresh                          │ 
-      chronus-api  main [primary]                        1 msg   │  claude --resume 7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f                  │ 
+      claudes                                          19 msgs   │                      │ session cookie format.                        │ │ 
+                                                                 │                      ╰───────────────────────────────────────────────╯ │ 
+   ● Investigate flaky e2e: program-join.spec           5h ago   │                                                                        │ 
+      chronus-web  test/stabilize-e2e [primary]        64 msgs   │  latest                                                                │ 
+  Yesterday ──────────────────────────────────────────────────   │                                                                        │ 
+   ● Terraform: bump RDS to 16                          1d ago   │                                                                        │ 
+      prod  main                                       33 msgs   │                     ╭ you · Oct 28 9:12 AM ──────────────────────────╮ │ 
+                                                                 │                     │ Why does the second request still send the old │ │ 
+   ● Explain webhook retry backoff                      1d ago   │                     │ token?                                         │ │ 
+      chronus-api  main [primary]                        1 msg   │                     ╰────────────────────────────────────────────────╯ │ 
+  This week ──────────────────────────────────────────────────   │                                                                        │ 
+   ● Review PR 2841: mentor availability with a delib…  4d ago   │ ╭ claude · Oct 28 9:12 AM ──────────────────────╮                      │ 
+      chronus-web  feat/availability-and-a-very-long-… 41 msgs   │ │ The refresh promise is not shared, so two     │                      │ 
+  Older ──────────────────────────────────────────────────────   │ │ callers race. I memoized it per session and   │                      │ 
+   ● Old notes                                          5w ago   │ │ added a regression test; all auth specs pass. │                      │ 
+      notes                                             3 msgs   │ ╰───────────────────────────────────────────────╯                      │ 
                                                                  ╰────────────────────────────────────────────────────────────────────────╯ 
-                                                                                                                                            
-  ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit                                             ● ○ 1–7 of 9 

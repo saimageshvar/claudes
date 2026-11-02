@@ -23,7 +23,7 @@ Builds from source into `~/.local/bin/claudes`.
 | type | filter immediately; space-separated words must all match title, folder, branch or worktree name; 2+ letters also search everything said in the transcript; the preview then shows a `matches` band with up to 5 matching lines, tagged by who said them |
 | `↑` `↓` | move |
 | `pgup` `pgdown` | previous / next page |
-| `enter` | resume the selected session |
+| `enter` | resume the selected session (the key hints and page position live in the two top rows) |
 | `tab` / `shift+tab` | cycle the filter tabs: All, Today, This week, Worktrees |
 | `ctrl+p` | show / hide the preview (wide terminals, 110+ columns) |
 | `esc` | clear the search; quit when it is already empty |

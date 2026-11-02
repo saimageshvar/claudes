@@ -1,30 +1,30 @@
-  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                                                     
-                                                                                                              
- ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────╮ 
- │ ❯ search title, folder, branch, or anything said                                                   9 / 9 │ 
- ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯ 
-                                                                                                              
-  This week ──────────────────────────────────────────────────   ╭─ preview ────────────────────────────────╮ 
- ▌ ● Review PR 2841: mentor availability with a delib…  4d ago   │ Review PR 2841: mentor availability with │ 
- ▌    chronus-web  feat/availability-and-a-very-long-… 41 msgs   │ a deliberately very long title that mus… │ 
-  Older ──────────────────────────────────────────────────────   │  chronus-web  feat/availability-and-a-v… │ 
-   ● Old notes                                          5w ago   │ ~/code/chronus-web.worktrees/pr-2841     │ 
-      notes                                             3 msgs   │ 41 msgs · started Sat Oct 24, 7:14 AM    │ 
-                                                                 │ No chat text captured for this session.  │ 
+  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                     enter resume  esc clear / quit  
+ ❯ search title, folder, branch, or anything said                                                    1–9 of 9 
+  Today ──────────────────────────────────────────────────────   ╭─ preview ────────────────────────────────╮ 
+ ▌ ● Fix token refresh race in auth middleware          2m ago   │ Fix token refresh race in auth           │ 
+ ▌    chronus-api  feat/auth-refresh  wt auth-refresh  48 msgs   │ middleware                               │ 
+                                                                 │  chronus-api  feat/auth-refresh  wt aut… │ 
+   ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refre… │ 
+      chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 7:12 AM    │ 
+                                                                 │  how it started                  ↓ newer │ 
+   ● Archie chat: streaming render jank                 1h ago   │             ╭ you · Oct 28 7:12 AM ────╮ │ 
+      chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │             │ Users get logged out     │ │ 
+                                                                 │             │ when two tabs refresh at │ │ 
+   ● Write fuzzy-search TUI spec                        3h ago   │             │ the same time. Find out  │ │ 
+      claudes                                          19 msgs   │             │ why the refresh token is │ │ 
+                                                                 │             │ reused and fix it        │ │ 
+   ● Investigate flaky e2e: program-join.spec           5h ago   │             │ without changing the     │ │ 
+      chronus-web  test/stabilize-e2e [primary]        64 msgs   │  latest                          ↑ older │ 
+  Yesterday ──────────────────────────────────────────────────   │               │ request still send the │ │ 
+   ● Terraform: bump RDS to 16                          1d ago   │               │ old token?             │ │ 
+      prod  main                                       33 msgs   │               ╰────────────────────────╯ │ 
                                                                  │                                          │ 
-                                                                 │                                          │ 
-                                                                 │                                          │ 
-                                                                 │                                          │ 
-                                                                 │                                          │ 
-                                                                 │                                          │ 
-                                                                 │                                          │ 
-                                                                 │                                          │ 
-                                                                 │                                          │ 
-                                                                 │                                          │ 
-                                                                 │                                          │ 
-                                                                 │  resume                                  │ 
-                                                                 │  cd ~/code/chronus-web.worktrees/pr-2841 │ 
-                                                                 │  claude --resume 77777777-2222-3333-444… │ 
+   ● Explain webhook retry backoff                      1d ago   │ ╭ claude · Oct 28 9:12 AM ─╮             │ 
+      chronus-api  main [primary]                        1 msg   │ │ The refresh promise is   │             │ 
+  This week ──────────────────────────────────────────────────   │ │ not shared, so two       │             │ 
+   ● Review PR 2841: mentor availability with a delib…  4d ago   │ │ callers race. I memoized │             │ 
+      chronus-web  feat/availability-and-a-very-long-… 41 msgs   │ │ it per session and added │             │ 
+  Older ──────────────────────────────────────────────────────   │ │ a regression test; all   │             │ 
+   ● Old notes                                          5w ago   │ │ auth specs pass.         │             │ 
+      notes                                             3 msgs   │ ╰──────────────────────────╯             │ 
                                                                  ╰──────────────────────────────────────────╯ 
-                                                                                                              
-  ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit               ○ ● 8–9 of 9 

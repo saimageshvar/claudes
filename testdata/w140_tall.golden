@@ -1,16 +1,12 @@
-  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                                                                                   
-                                                                                                                                            
- ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮ 
- │ ❯ search title, folder, branch, or anything said                                                                                 9 / 9 │ 
- ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ 
-                                                                                                                                            
+  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3          ↑↓ navigate  enter resume  tab filter  ctrl+p preview  esc clear / quit  
+ ❯ search title, folder, branch, or anything said                                                                                  1–9 of 9 
   Today ──────────────────────────────────────────────────────   ╭─ preview ──────────────────────────────────────────────────────────────╮ 
  ▌ ● Fix token refresh race in auth middleware          2m ago   │ Fix token refresh race in auth middleware                              │ 
  ▌    chronus-api  feat/auth-refresh  wt auth-refresh  48 msgs   │                                                                        │ 
                                                                  │  chronus-api  feat/auth-refresh  wt auth-refresh                       │ 
    ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refresh                              │ 
       chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 7:12 AM                                  │ 
-                                                                 │  how it started                                                ↓ newer │ 
+                                                                 │  how it started                                                        │ 
    ● Archie chat: streaming render jank                 1h ago   │                      ╭ you · Oct 28 7:12 AM ─────────────────────────╮ │ 
       chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │                      │ Users get logged out when two tabs refresh at │ │ 
                                                                  │                      │ the same time. Find out why the refresh token │ │ 
@@ -23,14 +19,23 @@
    ● Terraform: bump RDS to 16                          1d ago   │ │ the same tick and the second one sends the     │                     │ 
       prod  main                                       33 msgs   │ │ already-rotated token. Next I will look at how │                     │ 
                                                                  │ │ the refresh promise is cached.                 │                     │ 
-   ● Explain webhook retry backoff                      1d ago   │  latest                                                                │ 
+   ● Explain webhook retry backoff                      1d ago   │ ╰────────────────────────────────────────────────╯                     │ 
       chronus-api  main [primary]                        1 msg   │                                                                        │ 
   This week ──────────────────────────────────────────────────   │                                                                        │ 
-   ● Review PR 2841: mentor availability with a delib…  4d ago   │                                                                        │ 
+   ● Review PR 2841: mentor availability with a delib…  4d ago   │  latest                                                                │ 
       chronus-web  feat/availability-and-a-very-long-… 41 msgs   │                                                                        │ 
   Older ──────────────────────────────────────────────────────   │                                                                        │ 
    ● Old notes                                          5w ago   │                                                                        │ 
       notes                                             3 msgs   │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
+                                                                 │                                                                        │ 
                                                                  │                                                                        │ 
                                                                  │                     ╭ you · Oct 28 9:12 AM ──────────────────────────╮ │ 
                                                                  │                     │ Why does the second request still send the old │ │ 
@@ -42,9 +47,4 @@
                                                                  │ │ callers race. I memoized it per session and   │                      │ 
                                                                  │ │ added a regression test; all auth specs pass. │                      │ 
                                                                  │ ╰───────────────────────────────────────────────╯                      │ 
-                                                                 │  resume                                                                │ 
-                                                                 │  cd ~/code/chronus-api.worktrees/auth-refresh                          │ 
-                                                                 │  claude --resume 7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f                  │ 
                                                                  ╰────────────────────────────────────────────────────────────────────────╯ 
-                                                                                                                                            
-  ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit                                                 1–9 of 9 

@@ -1,9 +1,5 @@
-  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                                                     
-                                                                                                              
- ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────╮ 
- │ ❯ zzzz                                                                                             0 / 9 │ 
- ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯ 
-                                                                                                              
+  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3                     enter resume  esc clear / quit  
+ ❯ zzzz                                                                                                       
   No sessions match "zzzz". Press esc to clear.                  ╭─ preview ────────────────────────────────╮ 
                                                                  │                                          │ 
                                                                  │                                          │ 
@@ -25,6 +21,10 @@
                                                                  │                                          │ 
                                                                  │                                          │ 
                                                                  │                                          │ 
+                                                                 │                                          │ 
+                                                                 │                                          │ 
+                                                                 │                                          │ 
+                                                                 │                                          │ 
+                                                                 │                                          │ 
+                                                                 │                                          │ 
                                                                  ╰──────────────────────────────────────────╯ 
-                                                                                                              
-  ↑↓  navigate   enter  resume   tab  filter   ctrl+p  preview   esc  clear / quit                            

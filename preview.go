@@ -145,18 +145,6 @@ func previewTop(s *Session, tw int) []string {
 		cardRow(tw, []span{sp(msgs(s.Msgs), sFg), sp(" · ", sDim), sp("started ", sDim), sp(s.Started.Local().Format("Mon Jan 2, 3:04 PM"), sFg)}))
 }
 
-// previewBottom pins the resume command to the card's foot.
-func previewBottom(s *Session, tw int) []string {
-	code := func(ss ...span) string {
-		return pad(1, cCardBg) + line(tw, cCodeBg, append([]span{sp(" ", sCode)}, ss...), nil) + pad(1, cCardBg)
-	}
-	return []string{
-		cardRule(tw, "resume", sGreen, ""),
-		code(sp("cd", sCodeCd), sp(" "+short(s.Cwd), sCode)),
-		code(sp("claude", sCodeCl), sp(" --resume", sCodeArg), sp(" "+s.ID, sCode)),
-	}
-}
-
 // card wraps the interior lines in a rounded border with " preview " set into the top edge; exactly w×h cells.
 func card(lines []string, w, h int) string {
 	inner := w - 2

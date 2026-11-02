@@ -23,8 +23,8 @@ const (
 	wideAt      = 110
 	listWW      = 62 // list column in wide mode
 	gapW        = 2
-	bodyTop     = 6 // header, blank, 3-line search box, blank
-	chrome      = 8 // bodyTop + blank + footer
+	bodyTop     = 2 // tabs and key hints, then the search line with its page position
+	chrome      = 2
 )
 
 var tabNames = []string{"All", "Today", "This week", "Worktrees"}
@@ -70,7 +70,6 @@ type model struct {
 	list        list.Model
 	head, tail  viewport.Model // how it started (scrolls down to newer) and the latest messages (scrolls up to older)
 	pvTop       []string
-	pvBot       []string
 	pvMatch     []string // the matches band: transcript lines hitting the query
 	headOn      bool
 	tailOn      bool
@@ -189,7 +188,7 @@ func (m *model) pvW() int { return max(m.cardW()-2, 1) }
 
 // refreshPreview rebuilds the card for the selected session and splits the rows between the head and tail panes.
 func (m *model) refreshPreview() {
-	m.pvTop, m.pvBot, m.pvMatch, m.headOn, m.tailOn = nil, nil, nil, false, false
+	m.pvTop, m.pvMatch, m.headOn, m.tailOn = nil, nil, false, false
 	m.head.Height, m.tail.Height = 0, 0
 	s := m.selected()
 	if s == nil {
@@ -198,7 +197,7 @@ func (m *model) refreshPreview() {
 	w, h := m.pvW(), max(m.bodyH()-2, 1)
 	tw := w - 2
 	m.head.Width, m.tail.Width = w, w
-	m.pvTop, m.pvBot = previewTop(s, tw), previewBottom(s, tw)
+	m.pvTop = previewTop(s, tw)
 	headMsgs, tailMsgs := s.Head, s.Tail
 	if all, ok := m.chats[chatKey(s)]; ok {
 		headMsgs, tailMsgs = all[:min(len(all), maxPaneMsgs)], nil
@@ -209,7 +208,7 @@ func (m *model) refreshPreview() {
 	head, tail := chat(headMsgs, tw), chat(tailMsgs, tw)
 	m.headOn, m.tailOn = len(head) > 0, len(tail) > 0
 
-	rows := h - len(m.pvTop) - len(m.pvBot)
+	rows := h - len(m.pvTop)
 	for _, on := range []bool{m.headOn, m.tailOn} {
 		if on {
 			rows-- // its rule
@@ -276,10 +275,10 @@ func (m *model) cardLines() []string {
 		lines = append(lines, cardRow(tw, []span{sp("No chat text captured for this session.", sDim)}))
 	}
 	blank := cardRow(tw, nil)
-	for len(lines)+len(m.pvBot) < m.bodyH()-2 {
+	for len(lines) < m.bodyH()-2 {
 		lines = append(lines, blank)
 	}
-	return append(lines, m.pvBot...)
+	return lines
 }
 
 func (m *model) queryChanged() tea.Cmd {
@@ -513,25 +512,42 @@ func (m *model) header() string {
 	return ansi.Truncate(b.String(), m.w-1, "…")
 }
 
-func (m *model) searchBox() []string {
-	inner := m.w - 4
-	bd := sAccent
-	count := sAccent.Bold(true).Render(fmt.Sprint(len(m.list.Items()))) + sDim.Render(" / "+fmt.Sprint(m.base))
+// searchLine is the one-row search field with the page position on its right; while resuming it names the command.
+func (m *model) searchLine() string {
+	w := m.w - 2
+	if c := m.chosen; c != nil {
+		return " " + line(w, nil, []span{sp("◐ resuming → cd "+short(c.Cwd)+" && claude --resume "+c.ID, sPink)}, nil) + " "
+	}
+	right, rw := fit(m.pages(), w/2, nil)
+	lead := sPink.Bold(true).Render("❯") + " "
 	if m.searching {
-		count = m.sp.View() + " " + count
+		lead += m.sp.View() + " "
 	}
-	room := inner - 2 - 2 - lipgloss.Width(count) - 2
+	room := max(w-lipgloss.Width(lead)-rw-2, 1)
 	m.input.Width = max(room-1, 1)
-	in := ansi.Truncate(m.input.View(), max(room, 0), "")
-	mid := " " + sPink.Bold(true).Render("❯") + " " + in +
-		strings.Repeat(" ", max(inner-3-lipgloss.Width(in)-lipgloss.Width(count)-1, 1)) + count + " "
-	mid = ansi.Truncate(mid, inner, "")
-	mid += strings.Repeat(" ", max(inner-lipgloss.Width(mid), 0))
-	return []string{
-		" " + bd.Render("╭"+strings.Repeat("─", inner)+"╮"),
-		" " + bd.Render("│") + mid + bd.Render("│"),
-		" " + bd.Render("╰"+strings.Repeat("─", inner)+"╯"),
+	in := ansi.Truncate(m.input.View(), room, "")
+	return " " + lead + in + strings.Repeat(" ", max(w-lipgloss.Width(lead)-lipgloss.Width(in)-rw, 1)) + right + " "
+}
+
+// pages is the page dots and the "1–12 of 22" range of the list.
+func (m *model) pages() []span {
+	var out []span
+	n := len(m.list.Items())
+	if n == 0 {
+		return out
 	}
+	p := m.list.Paginator
+	if p.TotalPages > 1 && p.TotalPages <= 8 {
+		for i := 0; i < p.TotalPages; i++ {
+			if i == p.Page {
+				out = append(out, sp("● ", sAccent))
+			} else {
+				out = append(out, sp("○ ", sDim))
+			}
+		}
+	}
+	a := p.Page*p.PerPage + 1
+	return append(out, sp(fmt.Sprintf("%d–%d of %d", a, min(a+p.PerPage-1, n), n), sDim))
 }
 
 func (m *model) listColumn() []string {
@@ -565,53 +581,52 @@ func keycap(b key.Binding, st lipgloss.Style) []span {
 	return []span{sp(" "+h.Key+" ", st), sp(" "+h.Desc, sDim)}
 }
 
-func (m *model) footer() string {
-	w := m.w - 2
-	if s := m.chosen; s != nil {
-		return " " + line(w, nil, []span{sp("◐ resuming → cd "+short(s.Cwd)+" && claude --resume "+s.ID, sPink)}, nil) + " "
-	}
-	var left []span
+// hints are the key caps shown at the right of the top row when there is room.
+func (m *model) hints(caps, few bool) []span {
 	bs := []key.Binding{keys.Nav, keys.Open, keys.Tab}
 	if m.w >= wideAt {
 		bs = append(bs, keys.Preview)
 	}
 	bs = append(bs, keys.Esc)
+	if few {
+		bs = []key.Binding{keys.Open, keys.Esc}
+	}
+	var out []span
 	for i, b := range bs {
 		if i > 0 {
-			left = append(left, sp("  ", sFg))
+			out = append(out, sp("  ", sFg))
+		}
+		if !caps {
+			h := b.Help()
+			out = append(out, sp(h.Key, sAccent.Bold(true)), sp(" "+h.Desc, sDim))
+			continue
 		}
 		st := sKey
 		if i == 1 {
 			st = sKeyHot
 		}
-		left = append(left, keycap(b, st)...)
+		out = append(out, keycap(b, st)...)
 	}
-	var right []span
-	if n := len(m.list.Items()); n > 0 {
-		p := m.list.Paginator
-		if p.TotalPages > 1 && p.TotalPages <= 8 {
-			for i := 0; i < p.TotalPages; i++ {
-				if i == p.Page {
-					right = append(right, sp("● ", sAccent))
-				} else {
-					right = append(right, sp("○ ", sDim))
-				}
-			}
+	return out
+}
+
+// topRow is the tabs with the key hints right-aligned: key caps when they fit, then plain hints, then just enter and esc, else none.
+func (m *model) topRow() string {
+	tabs := m.header()
+	for _, v := range [][2]bool{{true, false}, {false, false}, {false, true}} {
+		hints, hw := fit(m.hints(v[0], v[1]), m.w, nil)
+		if gap := m.w - 1 - lipgloss.Width(tabs) - hw - 1; gap >= 2 {
+			return tabs + strings.Repeat(" ", gap) + hints
 		}
-		a := p.Page*p.PerPage + 1
-		right = append(right, sp(fmt.Sprintf("%d–%d of %d", a, min(a+p.PerPage-1, n), n), sDim))
 	}
-	return " " + line(w, nil, left, right) + " "
+	return tabs
 }
 
 func (m *model) View() string {
 	if m.w == 0 || m.h == 0 {
 		return ""
 	}
-	blank := strings.Repeat(" ", m.w)
-	out := []string{fit1(m.header(), m.w), blank}
-	out = append(out, m.searchBox()...)
-	out = append(out, blank)
+	out := []string{m.topRow(), m.searchLine()}
 	left := m.listColumn()
 	if m.wide() {
 		right := strings.Split(card(m.cardLines(), m.cardW(), m.bodyH()), "\n")
@@ -623,7 +638,6 @@ func (m *model) View() string {
 			out = append(out, " "+left[i]+" ")
 		}
 	}
-	out = append(out, blank, m.footer())
 	for i := range out {
 		out[i] = fit1(out[i], m.w)
 	}
