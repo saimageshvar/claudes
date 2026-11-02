@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -243,28 +242,4 @@ func snippetRows(sn Snippet, tw int) []string {
 		out = append(out, cardRow(tw, spans))
 	}
 	return out
-}
-
-// matchBand is the "matches" band plus as many snippets as fit in budget rows (band included).
-func matchBand(snips []Snippet, tw, budget int) []string {
-	var body []string
-	shown := 0
-	for _, sn := range snips {
-		rows := snippetRows(sn, tw)
-		if len(body)+len(rows)+1 > budget {
-			break
-		}
-		body, shown = append(body, rows...), shown+1
-	}
-	if shown == 0 {
-		return nil
-	}
-	hint := fmt.Sprintf("%d lines", len(snips))
-	switch {
-	case shown < len(snips):
-		hint = fmt.Sprintf("%d of %d lines", shown, len(snips))
-	case shown == 1:
-		hint = "1 line"
-	}
-	return append([]string{cardRule(tw, "matches", sAmber, hint)}, body...)
 }

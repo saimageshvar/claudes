@@ -50,3 +50,28 @@ func TestPreviewShowsMatchesBand(t *testing.T) {
 		}
 	}
 }
+
+func TestWheelOverMatchesScrollsMatchesNotHead(t *testing.T) {
+	ss := fixtures()
+	m := newModel()
+	m.Update(tea.WindowSizeMsg{Width: 140, Height: 30})
+	m.Update(loadedMsg(ss))
+	var snips []Snippet
+	for i := 0; i < 5; i++ {
+		snips = append(snips, Snippet{User: i%2 == 0, Pre: "…said that ", Hit: "refresh token", Post: " is reused across both tabs at the same time and that is the whole problem here…"})
+	}
+	m.hits = map[string][]Snippet{ss[0].ID: snips}
+	m.refilter()
+	if !m.matchOn || m.match.AtBottom() {
+		t.Fatalf("want a scrollable matches band, matchOn=%v height=%d", m.matchOn, m.match.Height)
+	}
+	headAt, matchAt := m.head.YOffset, m.match.YOffset
+	y := bodyTop + 1 + len(m.pvTop) + 1 // first snippet row
+	m.Update(tea.MouseMsg{X: 100, Y: y, Button: tea.MouseButtonWheelDown, Action: tea.MouseActionPress})
+	if m.match.YOffset <= matchAt {
+		t.Errorf("wheel over matches should scroll matches: offset %d -> %d", matchAt, m.match.YOffset)
+	}
+	if m.head.YOffset != headAt {
+		t.Errorf("wheel over matches must not scroll how-it-started: offset %d -> %d", headAt, m.head.YOffset)
+	}
+}

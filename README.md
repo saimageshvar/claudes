@@ -29,7 +29,7 @@ Builds from source into `~/.local/bin/claudes`.
 | `esc` | clear the search; quit when it is already empty |
 | `ctrl+c` | quit |
 | `shift+↑` `shift+↓` | scroll the preview's "latest" chat |
-| mouse | wheel over the preview's top pane ("how it started") scrolls down to newer messages, over the bottom pane ("latest") scrolls up to older ones; click a row to select it, double-click to resume, click a tab to switch, wheel to scroll |
+| mouse | wheel over the preview's `matches` band scrolls its lines, over the preview's top pane ("how it started") scrolls down to newer messages, over the bottom pane ("latest") scrolls up to older ones; click a row to select it, double-click to resume, click a tab to switch, wheel to scroll |
 
 ## Development
 

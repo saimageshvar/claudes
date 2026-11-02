@@ -70,7 +70,9 @@ type model struct {
 	list        list.Model
 	head, tail  viewport.Model // how it started (scrolls down to newer) and the latest messages (scrolls up to older)
 	pvTop       []string
-	pvMatch     []string // the matches band: transcript lines hitting the query
+	match       viewport.Model // the matches band: transcript lines hitting the query, scrolls when they don't all fit
+	matchOn     bool
+	matchLines  int
 	headOn      bool
 	tailOn      bool
 	chats       map[string][]Msg // full transcripts of sessions viewed, by chatKey
@@ -94,7 +96,7 @@ func newModel() *model {
 	in.PlaceholderStyle = sDim
 	in.TextStyle = sFg
 	in.Focus()
-	m := &model{input: in, head: viewport.New(0, 0), tail: viewport.New(0, 0), showPreview: true,
+	m := &model{input: in, head: viewport.New(0, 0), tail: viewport.New(0, 0), match: viewport.New(0, 0), showPreview: true,
 		chats: map[string][]Msg{}, chatWanted: map[string]bool{}}
 	l := list.New(nil, delegate{m}, 0, 0)
 	l.SetShowTitle(false)
@@ -188,8 +190,8 @@ func (m *model) pvW() int { return max(m.cardW()-2, 1) }
 
 // refreshPreview rebuilds the card for the selected session and splits the rows between the head and tail panes.
 func (m *model) refreshPreview() {
-	m.pvTop, m.pvMatch, m.headOn, m.tailOn = nil, nil, false, false
-	m.head.Height, m.tail.Height = 0, 0
+	m.pvTop, m.matchOn, m.headOn, m.tailOn = nil, false, false, false
+	m.head.Height, m.tail.Height, m.match.Height = 0, 0, 0
 	s := m.selected()
 	if s == nil {
 		return
@@ -216,8 +218,15 @@ func (m *model) refreshPreview() {
 	}
 	rows = max(rows, 0)
 	if snips := m.hits[s.ID]; len(snips) > 0 && rows >= 6 {
-		m.pvMatch = matchBand(snips, tw, rows*2/5)
-		rows -= len(m.pvMatch)
+		var all []string
+		for _, sn := range snips {
+			all = append(all, snippetRows(sn, tw)...)
+		}
+		m.match.Width, m.match.Height = w, min(len(all), max(rows*2/5-1, 2))
+		m.match.SetContent(strings.Join(all, "\n"))
+		m.match.GotoTop()
+		m.matchOn, m.matchLines = true, len(snips)
+		rows -= 1 + m.match.Height
 	}
 	switch {
 	case m.headOn && m.tailOn:
@@ -251,7 +260,21 @@ func (m *model) refreshPreview() {
 // cardLines is the card interior: header, the two chat panes under their rules, then the pinned foot.
 func (m *model) cardLines() []string {
 	tw := m.pvW() - 2
-	lines := append(append([]string{}, m.pvTop...), m.pvMatch...)
+	lines := append([]string{}, m.pvTop...)
+	if m.matchOn {
+		hint := fmt.Sprintf("%d lines", m.matchLines)
+		if m.matchLines == 1 {
+			hint = "1 line"
+		}
+		switch {
+		case !m.match.AtBottom():
+			hint += " ↓"
+		case !m.match.AtTop():
+			hint = "↑ " + hint
+		}
+		lines = append(lines, cardRule(tw, "matches", sAmber, hint))
+		lines = append(lines, strings.Split(m.match.View(), "\n")...)
+	}
 	if m.headOn && m.head.Height > 0 {
 		label, hint := "conversation", ""
 		if m.tailOn {
@@ -442,16 +465,31 @@ func (m *model) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, c
 }
 
+// paneAt is the scrollable pane under card row r: matches, then how-it-started, else latest.
+func (m *model) paneAt(r int) *viewport.Model {
+	r -= len(m.pvTop)
+	if m.matchOn {
+		if r < 1+m.match.Height {
+			if r < 0 {
+				return &m.head
+			}
+			return &m.match
+		}
+		r -= 1 + m.match.Height
+	}
+	if m.headOn && r < 1+m.head.Height {
+		return &m.head
+	}
+	return &m.tail
+}
+
 func (m *model) mouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 	inCard := m.wide() && msg.X >= 1+m.listW()+gapW
 	switch {
 	case msg.Button == tea.MouseButtonWheelUp || msg.Button == tea.MouseButtonWheelDown:
 		if inCard {
-			pane := &m.tail
-			if m.headOn && msg.Y-bodyTop-1 < len(m.pvTop)+len(m.pvMatch)+1+m.head.Height {
-				pane = &m.head
-			}
 			var c tea.Cmd
+			pane := m.paneAt(msg.Y - bodyTop - 1)
 			*pane, c = pane.Update(msg)
 			return m, c
 		}
