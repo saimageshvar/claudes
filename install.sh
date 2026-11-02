@@ -7,6 +7,8 @@ set -euo pipefail
 
 repo=saimageshvar/claudes
 die() { echo "claudes install: $*" >&2; exit 1; }
+# GitHub's release CDN is occasionally slow or stalls; bound every download and retry it.
+get() { curl -fsSL --retry 3 --retry-delay 1 --connect-timeout 10 --max-time 90 "$@"; }
 
 dest=${1:-${CLAUDES_INSTALL_DIR:-$HOME/.local/bin}}
 case $(uname -s) in Darwin) os=darwin ;; Linux) os=linux ;; *) die "unsupported OS $(uname -s) (macOS and Linux only)" ;; esac
@@ -23,7 +25,7 @@ trap 'rm -rf "$tmp"' EXIT
 mkdir -p "$dest"
 dest=$(cd "$dest" && pwd)
 
-if curl -fsSL "$base/$asset" -o "$tmp/$asset" && curl -fsSL "$base/checksums.txt" -o "$tmp/checksums.txt"; then
+if get "$base/$asset" -o "$tmp/$asset" && get "$base/checksums.txt" -o "$tmp/checksums.txt"; then
   want=$(awk -v f="$asset" '$2 == f { print $1 }' "$tmp/checksums.txt")
   got=$( (sha256sum "$tmp/$asset" 2>/dev/null || shasum -a 256 "$tmp/$asset") | awk '{ print $1 }')
   [ -n "$want" ] && [ "$want" = "$got" ] || die "checksum mismatch for $asset; not installing"
