@@ -162,62 +162,97 @@ func card(lines []string, w, h int) string {
 	return strings.Join(append(out, bot), "\n")
 }
 
-// snippetRows lays one matching line out as at most two rows under a who-said-it tag, hit highlighted; the window
-// is trimmed (before the hit first) so the hit always stays on screen.
+type snipCell struct {
+	r   rune
+	hit bool
+}
+
+func cellsWidth(cs []snipCell) int {
+	w := 0
+	for _, c := range cs {
+		w += runewidth.RuneWidth(c.r)
+	}
+	return w
+}
+
+// shrink drops one rune from the outer end of an ellipsised context, keeping the ellipsis.
+func shrink(p []rune, fromLeft bool) []rune {
+	if len(p) <= 1 {
+		return p
+	}
+	if fromLeft {
+		if p[0] == '…' {
+			return append(p[:1:1], p[2:]...)
+		}
+		return append([]rune{'…'}, p[2:]...)
+	}
+	return append(p[:len(p)-2:len(p)-2], '…')
+}
+
+// snippetRows lays one matching line out as at most two rows under a who-said-it tag, hit highlighted. The window
+// is trimmed by cell width (before the hit first, then after it) to leave room for the word a wrap carries to row
+// two, so the hit always stays on screen.
 func snippetRows(sn Snippet, tw int) []string {
 	const tagW = 8
 	w := max(tw-tagW, 8)
 	pre, hit, post := []rune(sn.Pre), []rune(sn.Hit), []rune(sn.Post)
-	if over := len(pre) + len(hit) + len(post) - (2*w - 2); over > 0 {
-		if cut := min(over, len(pre)-1); cut > 0 {
-			pre, over = append([]rune("…"), pre[cut+1:]...), over-cut
-		}
-		if over > 0 && len(post) > over {
-			post = append(post[:len(post)-over-1], '…')
+	runesWidth := func(rs []rune) int { return runewidth.StringWidth(string(rs)) }
+	for runesWidth(pre)+runesWidth(hit)+runesWidth(post) > w+w*3/4 {
+		switch {
+		case len(pre) > 1:
+			pre = shrink(pre, true)
+		case len(post) > 1:
+			post = shrink(post, false)
+		default:
+			goto trimmed
 		}
 	}
-	type cell struct {
-		r   rune
+trimmed:
+	var cells []snipCell
+	for _, part := range []struct {
+		rs  []rune
 		hit bool
+	}{{pre, false}, {hit, true}, {post, false}} {
+		for _, r := range part.rs {
+			cells = append(cells, snipCell{r, part.hit})
+		}
 	}
-	var cells []cell
-	for _, r := range pre {
-		cells = append(cells, cell{r, false})
-	}
-	for _, r := range hit {
-		cells = append(cells, cell{r, true})
-	}
-	for _, r := range post {
-		cells = append(cells, cell{r, false})
-	}
-	var lines [][]cell
-	var cur []cell
-	cw := 0
-	for _, c := range cells {
+
+	var first, rest []snipCell
+	used := 0
+	for i, c := range cells {
 		rw := runewidth.RuneWidth(c.r)
-		if cw+rw > w && len(lines) < 1 {
-			var carry []cell // wrap at the last space when it is not too far back
-			for i := len(cur) - 1; i > len(cur)/2; i-- {
-				if cur[i].r == ' ' {
-					cur, carry = cur[:i], append(carry, cur[i+1:]...)
+		if used+rw > w {
+			first, rest = cells[:i], cells[i:]
+			for j := len(first) - 1; j > len(first)/2; j-- { // break at the last space when it is not too far back
+				if first[j].r == ' ' {
+					first, rest = cells[:j], cells[j+1:]
 					break
 				}
 			}
-			lines, cur, cw = append(lines, cur), carry, 0
-			for _, c := range carry {
-				cw += runewidth.RuneWidth(c.r)
-			}
+			break
 		}
-		cur, cw = append(cur, c), cw+rw
+		used += rw
 	}
-	lines = append(lines, cur)
+	if rest == nil {
+		first = cells
+	}
+	if cellsWidth(rest) > w { // only reachable with very wide runes
+		for len(rest) > 1 && cellsWidth(rest) > w-1 {
+			rest = rest[:len(rest)-1]
+		}
+		rest = append(rest[:len(rest):len(rest)], snipCell{'…', false})
+	}
 
 	tag, tagSt := "claude", sPink.Bold(true)
 	if sn.User {
 		tag, tagSt = "you", sAccent.Bold(true)
 	}
 	var out []string
-	for li, ln := range lines {
+	for li, ln := range [][]snipCell{first, rest} {
+		if li == 1 && len(ln) == 0 {
+			break
+		}
 		lead := strings.Repeat(" ", tagW)
 		if li == 0 {
 			lead = tag + strings.Repeat(" ", tagW-len(tag))
@@ -225,12 +260,10 @@ func snippetRows(sn Snippet, tw int) []string {
 		spans := []span{sp(lead, tagSt)}
 		for i := 0; i < len(ln); {
 			j := i
-			for j < len(ln) && ln[j].hit == ln[i].hit {
-				j++
-			}
 			var b strings.Builder
-			for _, c := range ln[i:j] {
-				b.WriteRune(c.r)
+			for j < len(ln) && ln[j].hit == ln[i].hit {
+				b.WriteRune(ln[j].r)
+				j++
 			}
 			st := sFg
 			if ln[i].hit {

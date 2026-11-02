@@ -73,6 +73,7 @@ type model struct {
 	match       viewport.Model // the matches band: transcript lines hitting the query, scrolls when they don't all fit
 	matchOn     bool
 	matchLines  int
+	matchKey    string // session and hit count the matches pane was last built for, so a rebuild keeps its scroll
 	headOn      bool
 	tailOn      bool
 	chats       map[string][]Msg // full transcripts of sessions viewed, by chatKey
@@ -188,8 +189,10 @@ func (m *model) selected() *Session {
 
 func (m *model) pvW() int { return max(m.cardW()-2, 1) }
 
-// refreshPreview rebuilds the card for the selected session and splits the rows between the head and tail panes.
+// refreshPreview rebuilds the card for the selected session and splits the rows between the matches band (when the
+// query hit its transcript) and the head and tail chat panes.
 func (m *model) refreshPreview() {
+	prevMatchY := m.match.YOffset
 	m.pvTop, m.matchOn, m.headOn, m.tailOn = nil, false, false, false
 	m.head.Height, m.tail.Height, m.match.Height = 0, 0, 0
 	s := m.selected()
@@ -217,14 +220,19 @@ func (m *model) refreshPreview() {
 		}
 	}
 	rows = max(rows, 0)
-	if snips := m.hits[s.ID]; len(snips) > 0 && rows >= 6 {
+	if snips := m.hits[s.ID]; len(snips) > 0 && rows >= 4 {
 		var all []string
 		for _, sn := range snips {
 			all = append(all, snippetRows(sn, tw)...)
 		}
 		m.match.Width, m.match.Height = w, min(len(all), max(rows*2/5-1, 2))
 		m.match.SetContent(strings.Join(all, "\n"))
-		m.match.GotoTop()
+		if key := fmt.Sprintf("%s|%d", s.ID, len(snips)); key == m.matchKey {
+			m.match.SetYOffset(prevMatchY)
+		} else {
+			m.match.GotoTop()
+			m.matchKey = key
+		}
 		m.matchOn, m.matchLines = true, len(snips)
 		rows -= 1 + m.match.Height
 	}
@@ -257,7 +265,8 @@ func (m *model) refreshPreview() {
 	m.tail.GotoBottom()
 }
 
-// cardLines is the card interior: header, the two chat panes under their rules, then the pinned foot.
+// cardLines is the card interior: the header, then the matches band, how-it-started and latest panes, each under its
+// rule, padded to the card's height.
 func (m *model) cardLines() []string {
 	tw := m.pvW() - 2
 	lines := append([]string{}, m.pvTop...)
@@ -407,7 +416,12 @@ func (m *model) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.seq == m.seq.Load() {
 			m.searching = false
 			m.hits = msg.ids
+			keep := ""
+			if s := m.selected(); s != nil {
+				keep = s.ID
+			}
 			m.refilter()
+			m.selectID(keep) // the new rows must not yank the selection back to the top
 		}
 		return m, nil
 	case tea.MouseMsg:
@@ -466,18 +480,26 @@ func (m *model) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // paneAt is the scrollable pane under card row r: matches, then how-it-started, else latest.
+// selectID moves the selection to the session with that id, if it is still listed.
+func (m *model) selectID(id string) {
+	for i, it := range m.list.Items() {
+		if it.(item).s.ID == id {
+			m.list.Select(i)
+			m.refreshPreview()
+			return
+		}
+	}
+}
+
 func (m *model) paneAt(r int) *viewport.Model {
 	r -= len(m.pvTop)
-	if m.matchOn {
+	if m.matchOn && r >= 0 {
 		if r < 1+m.match.Height {
-			if r < 0 {
-				return &m.head
-			}
 			return &m.match
 		}
 		r -= 1 + m.match.Height
 	}
-	if m.headOn && r < 1+m.head.Height {
+	if m.headOn && r < 1+m.head.Height { // the card header counts as the first pane
 		return &m.head
 	}
 	return &m.tail

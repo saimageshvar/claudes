@@ -27,7 +27,6 @@ var (
 	cSelBg  = ac("#EFE3FF", "#2E2057")
 	cCardBg = ac("#F6F1FF", "#1B1630")
 	cKeyBg  = ac("#E3D9F5", "#34295A")
-	cCodeBg = ac("#1E1B3A", "#0B0914")
 	white   = lipgloss.Color("#FFFFFF")
 
 	sFg     = lipgloss.NewStyle().Foreground(cFg)
@@ -46,11 +45,6 @@ var (
 	sKey    = lipgloss.NewStyle().Background(cKeyBg).Foreground(cFg).Bold(true)
 	sKeyHot = lipgloss.NewStyle().Background(cPink).Foreground(white).Bold(true)
 	sWt     = lipgloss.NewStyle().Background(lipgloss.Color("#FBBF24")).Foreground(lipgloss.Color("#451A03")).Bold(true)
-	sCode   = lipgloss.NewStyle().Background(cCodeBg).Foreground(lipgloss.Color("#E9E4FF"))
-	// The code block is dark in both themes, so its syntax colours use the bright (dark-theme) variants.
-	sCodeCd  = sCode.Foreground(lipgloss.Color("#4ADE80")).Bold(true)
-	sCodeCl  = sCode.Foreground(lipgloss.Color("#F472B6")).Bold(true)
-	sCodeArg = sCode.Foreground(lipgloss.Color("#22D3EE"))
 )
 
 var chipFills = [][2]string{

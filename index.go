@@ -454,12 +454,12 @@ func foldRunes(s string) []rune {
 // snippetOf cuts a window around the first case-insensitive hit of phrase (already folded) in text.
 func snippetOf(user bool, text string, phrase []rune) (Snippet, bool) {
 	rs := []rune(strings.Join(strings.Fields(text), " "))
-	lo := foldRunes(string(rs))
-	idx := strings.Index(string(lo), string(phrase))
+	lo := string(foldRunes(string(rs)))
+	idx := strings.Index(lo, string(phrase))
 	if idx < 0 {
 		return Snippet{}, false
 	}
-	at := utf8.RuneCountInString(string(lo)[:idx])
+	at := utf8.RuneCountInString(lo[:idx])
 	from, to := max(at-snipBefore, 0), min(at+len(phrase)+snipAfter, len(rs))
 	if from > 0 { // start and end on whole words
 		for i := from; i < at && i < from+15; i++ {
@@ -491,9 +491,10 @@ func snippetOf(user bool, text string, phrase []rune) (Snippet, bool) {
 // ignored) and returns up to maxSnippets matching lines per session, keyed by index into sessions.
 func transcriptHits(sessions []Session, query string, cancelled func() bool) map[int][]Snippet {
 	phrase := foldRunes(strings.Join(strings.Fields(query), " "))
-	// JSON escapes quotes, backslashes and non-ASCII, so the raw-line prefilter only applies to plain phrases.
-	raw := []byte(strings.ToLower(string(phrase)))
-	plain := !strings.ContainsAny(string(phrase), "\"\\") && len(raw) == len(phrase)
+	// Transcripts hold non-ASCII as raw UTF-8 but escape quotes and backslashes, and a newline or tab between two
+	// words is an escape too, so the raw-line prefilter looks for each word on its own and skips such phrases.
+	words := bytes.Fields([]byte(strings.ToLower(string(phrase))))
+	plain := !strings.ContainsAny(string(phrase), "\"\\")
 	hits := map[int][]Snippet{}
 	if len(phrase) == 0 {
 		return hits
@@ -517,7 +518,7 @@ func transcriptHits(sessions []Session, query string, cancelled func() bool) map
 			for len(snips) < maxSnippets && !cancelled() {
 				line, err := readLine(r)
 				if bytes.HasPrefix(line, []byte(`{"parentUuid"`)) && len(line) < maxLineJSON &&
-					(!plain || bytes.Contains(bytes.ToLower(line), raw)) {
+					(!plain || containsAll(bytes.ToLower(line), words)) {
 					snips = append(snips, lineSnippets(line, phrase)...)
 				}
 				if err != nil {
@@ -535,6 +536,27 @@ func transcriptHits(sessions []Session, query string, cancelled func() bool) map
 	return hits
 }
 
+func containsAll(line []byte, words [][]byte) bool {
+	for _, w := range words {
+		if !bytes.Contains(line, w) {
+			return false
+		}
+	}
+	return true
+}
+
+// searchableUser reports whether a prompt is something you typed, as opposed to injected reminders or
+// interruption markers; unlike isHumanText it keeps prompts that start with "<" (pasted JSX or XML).
+func searchableUser(t string) bool {
+	t = strings.TrimSpace(t)
+	for _, p := range []string{"<system-reminder", "<local-command", "[Request interrupted", "Caveat:", "Base directory for this skill:"} {
+		if strings.HasPrefix(t, p) {
+			return false
+		}
+	}
+	return t != ""
+}
+
 // lineSnippets decodes one transcript line and returns snippets for its human prompt or Claude text.
 func lineSnippets(line []byte, phrase []rune) []Snippet {
 	var rec record
@@ -543,7 +565,7 @@ func lineSnippets(line []byte, phrase []rune) []Snippet {
 	}
 	var out []Snippet
 	for _, b := range blocks(rec.Message.Content) {
-		user := rec.Type == "user" && (rec.Origin == nil || rec.Origin.Kind == "human") && isHumanText(b.Text)
+		user := rec.Type == "user" && (rec.Origin == nil || rec.Origin.Kind == "human") && searchableUser(b.Text)
 		if b.Type != "text" || !(user || rec.Type == "assistant") {
 			continue
 		}
