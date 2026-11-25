@@ -30,9 +30,10 @@ const (
 var tabNames = []string{"All", "Today", "This week", "Worktrees"}
 var tabCountStyle = []lipgloss.Style{sAccent, sCyan, sAmber, sPink}
 
-type keyMap struct{ Nav, Open, Tab, Preview, Esc, Up, Down, PgUp, PgDown, ChatUp, ChatDown key.Binding }
+type keyMap struct{ Aux, Nav, Open, Tab, Preview, Esc, Up, Down, PgUp, PgDown, ChatUp, ChatDown key.Binding }
 
 var keys = keyMap{
+	Aux:      key.NewBinding(key.WithKeys("ctrl+o"), key.WithHelp("ctrl+o", "side/huddle/orchestrated")),
 	Nav:      key.NewBinding(key.WithKeys("up", "down"), key.WithHelp("↑↓", "navigate")),
 	Open:     key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "resume")),
 	Tab:      key.NewBinding(key.WithKeys("tab", "shift+tab"), key.WithHelp("tab", "filter")),
@@ -85,6 +86,8 @@ type model struct {
 	searching   bool
 	hits        map[string][]Snippet // transcript lines matching the query, by session id
 	tabX        [][2]int
+	showAux     bool
+	auxX        [2]int
 	lastClick   time.Time
 	lastIdx     int
 	chosen      *Session
@@ -134,7 +137,19 @@ func (m *model) layout() {
 	m.refreshPreview()
 }
 
+func isAux(s *Session) bool {
+	for _, suf := range []string{"[Side]", "[Hdl]", "[Orc]"} {
+		if strings.HasSuffix(s.Title, suf) {
+			return true
+		}
+	}
+	return false
+}
+
 func (m *model) inTab(s *Session, tab int) bool {
+	if isAux(s) && !m.showAux {
+		return false
+	}
 	switch tab {
 	case 1:
 		return dayLabel(s.Updated, now()) == "Today"
@@ -448,6 +463,10 @@ func (m *model) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.setTab(m.tab + d)
 			return m, nil
+		case key.Matches(msg, keys.Aux):
+			m.showAux = !m.showAux
+			m.refilter()
+			return m, nil
 		case key.Matches(msg, keys.Preview):
 			m.showPreview = !m.showPreview
 			m.layout()
@@ -528,6 +547,10 @@ func (m *model) mouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 				m.setTab(i)
 			}
 		}
+		if msg.X >= m.auxX[0] && msg.X < m.auxX[1] {
+			m.showAux = !m.showAux
+			m.refilter()
+		}
 	case !inCard && msg.Y >= bodyTop && msg.Y < bodyTop+m.list.Paginator.PerPage*rowH:
 		i := m.list.Paginator.Page*m.list.Paginator.PerPage + (msg.Y-bodyTop)/rowH
 		if i >= len(m.list.Items()) {
@@ -569,6 +592,19 @@ func (m *model) header() string {
 		m.tabX = append(m.tabX, [2]int{x + 1, x + 1 + w})
 		x += 1 + w
 	}
+	aux := 0
+	for i := range m.all {
+		if isAux(&m.all[i]) {
+			aux++
+		}
+	}
+	box, chip := "☐", sDim
+	if m.showAux {
+		box, chip = "☑", sTabOn
+	}
+	t := chip.Render(fmt.Sprintf(" %s Side·Hdl·Orc %d ", box, aux))
+	b.WriteString("  " + t)
+	m.auxX = [2]int{x + 2, x + 2 + lipgloss.Width(t)}
 	return ansi.Truncate(b.String(), m.w-1, "…")
 }
 

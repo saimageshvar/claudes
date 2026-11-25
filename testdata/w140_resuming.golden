@@ -1,4 +1,4 @@
-  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3          ↑↓ navigate  enter resume  tab filter  ctrl+p preview  esc clear / quit  
+  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3    ☐ Side·Hdl·Orc 0                               enter resume  esc clear / quit  
  ◐ resuming → cd ~/code/chronus-api.worktrees/auth-refresh && claude --resume 7f3a1c9e-4d21-4b8a-9e0c-1a2b3c4d5e6f                          
   Today ──────────────────────────────────────────────────────   ╭─ preview ──────────────────────────────────────────────────────────────╮ 
  ▌ ● Fix token refresh race in auth middleware          2m ago   │ Fix token refresh race in auth middleware                              │ 

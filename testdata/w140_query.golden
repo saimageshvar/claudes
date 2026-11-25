@@ -1,4 +1,4 @@
-  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3          ↑↓ navigate  enter resume  tab filter  ctrl+p preview  esc clear / quit  
+  ✦ claudes   All 9   Today 5   This week 8   Worktrees 3    ☐ Side·Hdl·Orc 0                               enter resume  esc clear / quit  
  ❯ auth tok                                                                                                                        1–1 of 1 
  ▌ ● Fix token refresh race in auth middleware          2m ago   ╭─ preview ──────────────────────────────────────────────────────────────╮ 
  ▌    chronus-api  feat/auth-refresh  wt auth-refresh  48 msgs   │ Fix token refresh race in auth middleware                              │ 
