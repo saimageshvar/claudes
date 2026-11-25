@@ -2,15 +2,15 @@
  ❯ search title, folder, branch, or anything said                                              ● ○ ○ 1–4 of 9 
   Today ──────────────────────────────────────────────────────   ╭─ preview ────────────────────────────────╮ 
  ▌ ● Fix token refresh race in auth middleware          2m ago   │ Fix token refresh race in auth           │ 
- ▌    chronus-api  feat/auth-refresh  wt auth-refresh  48 msgs   │ middleware                               │ 
+ ▌    chronus-api  feat/auth-refresh  wt auth-re… 48 msgs · 0B   │ middleware                               │ 
                                                                  │  chronus-api  feat/auth-refresh  wt aut… │ 
    ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refre… │ 
-      chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 7:12 AM    │ 
+      chronus-api  main [primary]                112 msgs · 0B   │ 48 msgs · 0B · started Wed Oct 28, 7:12… │ 
                                                                  │  how it started                  ↓ newer │ 
    ● Archie chat: streaming render jank                 1h ago   │       ╭ you · Oct 28 7:12 AM ──────────╮ │ 
-      chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │       │ Users get logged out when two  │ │ 
+      chronus-web  fix/chat-stream  wt chat-stre… 27 msgs · 0B   │       │ Users get logged out when two  │ │ 
                                                                  │  latest                          ↑ older │ 
    ● Write fuzzy-search TUI spec                        3h ago   │ │ added a regression test; all   │       │ 
-      claudes                                          19 msgs   │ │ auth specs pass.               │       │ 
+      claudes                                     19 msgs · 0B   │ │ auth specs pass.               │       │ 
                                                                  │ ╰────────────────────────────────╯       │ 
                                                                  ╰──────────────────────────────────────────╯ 

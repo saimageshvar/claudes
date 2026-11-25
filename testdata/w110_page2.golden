@@ -2,29 +2,29 @@
  ❯ search title, folder, branch, or anything said                                                    1–9 of 9 
   Today ──────────────────────────────────────────────────────   ╭─ preview ────────────────────────────────╮ 
  ▌ ● Fix token refresh race in auth middleware          2m ago   │ Fix token refresh race in auth           │ 
- ▌    chronus-api  feat/auth-refresh  wt auth-refresh  48 msgs   │ middleware                               │ 
+ ▌    chronus-api  feat/auth-refresh  wt auth-re… 48 msgs · 0B   │ middleware                               │ 
                                                                  │  chronus-api  feat/auth-refresh  wt aut… │ 
    ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refre… │ 
-      chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 7:12 AM    │ 
+      chronus-api  main [primary]                112 msgs · 0B   │ 48 msgs · 0B · started Wed Oct 28, 7:12… │ 
                                                                  │  how it started                  ↓ newer │ 
    ● Archie chat: streaming render jank                 1h ago   │       ╭ you · Oct 28 7:12 AM ──────────╮ │ 
-      chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │       │ Users get logged out when two  │ │ 
+      chronus-web  fix/chat-stream  wt chat-stre… 27 msgs · 0B   │       │ Users get logged out when two  │ │ 
                                                                  │       │ tabs refresh at the same time. │ │ 
    ● Write fuzzy-search TUI spec                        3h ago   │       │ Find out why the refresh token │ │ 
-      claudes                                          19 msgs   │       │ is reused and fix it without   │ │ 
+      claudes                                     19 msgs · 0B   │       │ is reused and fix it without   │ │ 
                                                                  │       │ changing the session cookie    │ │ 
    ● Investigate flaky e2e: program-join.spec           5h ago   │       │ format.                        │ │ 
-      chronus-web  test/stabilize-e2e [primary]        64 msgs   │  latest                                  │ 
+      chronus-web  test/stabilize-e2e [primary]   64 msgs · 0B   │  latest                                  │ 
   Yesterday ──────────────────────────────────────────────────   │          ╭ you · Oct 28 9:12 AM ───────╮ │ 
    ● Terraform: bump RDS to 16                          1d ago   │          │ Why does the second request │ │ 
-      prod  main                                       33 msgs   │          │ still send the old token?   │ │ 
+      prod  main                                  33 msgs · 0B   │          │ still send the old token?   │ │ 
                                                                  │          ╰─────────────────────────────╯ │ 
    ● Explain webhook retry backoff                      1d ago   │                                          │ 
-      chronus-api  main [primary]                        1 msg   │ ╭ claude · Oct 28 9:12 AM ───────╮       │ 
+      chronus-api  main [primary]                   1 msg · 0B   │ ╭ claude · Oct 28 9:12 AM ───────╮       │ 
   This week ──────────────────────────────────────────────────   │ │ The refresh promise is not     │       │ 
    ● Review PR 2841: mentor availability with a delib…  4d ago   │ │ shared, so two callers race. I │       │ 
-      chronus-web  feat/availability-and-a-very-long-… 41 msgs   │ │ memoized it per session and    │       │ 
+      chronus-web  feat/availability-and-a-very-… 41 msgs · 0B   │ │ memoized it per session and    │       │ 
   Older ──────────────────────────────────────────────────────   │ │ added a regression test; all   │       │ 
    ● Old notes                                          5w ago   │ │ auth specs pass.               │       │ 
-      notes                                             3 msgs   │ ╰────────────────────────────────╯       │ 
+      notes                                        3 msgs · 0B   │ ╰────────────────────────────────╯       │ 
                                                                  ╰──────────────────────────────────────────╯ 

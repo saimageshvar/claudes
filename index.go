@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -54,6 +55,7 @@ type Session struct {
 	Started    time.Time
 	Updated    time.Time
 	Msgs       int
+	Size       int64
 	InTx       bool `json:"-"`
 	gitInfo    `json:"-"`
 }
@@ -254,32 +256,44 @@ func parseSession(path string, info os.FileInfo) *Session {
 	default:
 		s.Title = oneLine(s.FirstText, 120)
 	}
-	s.Msgs = countHuman(path)
+	s.Msgs = countMsgs(path)
+	s.Size = info.Size()
 	return s
 }
 
-func countHuman(path string) int {
+// countMsgs counts the conversation as the chat shows it: human prompts plus assistant replies that carry text.
+func countMsgs(path string) int {
 	f, err := os.Open(path)
 	if err != nil {
 		return 0
 	}
 	defer f.Close()
-	pat := []byte(`"origin":{"kind":"human"}`)
-	buf := make([]byte, 1<<20)
-	n, carry := 0, 0
+	human, asst, text := []byte(`"origin":{"kind":"human"}`), []byte(`"type":"assistant"`), []byte(`"type":"text"`)
+	r := bufio.NewReaderSize(f, 1<<20)
+	n := 0
 	for {
-		m, err := f.Read(buf[carry:])
-		end := carry + m
-		n += bytes.Count(buf[:end], pat)
-		carry = 0
-		if end >= len(pat) {
-			carry = len(pat) - 1
-			copy(buf, buf[end-carry:end])
+		line, err := readLine(r)
+		switch {
+		case bytes.Contains(line, human):
+			n++
+		case bytes.HasPrefix(line, []byte(`{"parentUuid"`)) && bytes.Contains(line, asst) && bytes.Contains(line, text) &&
+			!bytes.Contains(line, []byte(`"isSidechain":true`)):
+			n++
 		}
 		if err != nil {
 			return n
 		}
 	}
+}
+
+func humanSize(n int64) string {
+	switch {
+	case n >= 1<<20:
+		return fmt.Sprintf("%.1fMB", float64(n)/(1<<20))
+	case n >= 1<<10:
+		return fmt.Sprintf("%.1fKB", float64(n)/(1<<10))
+	}
+	return fmt.Sprintf("%dB", n)
 }
 
 const gitTTL = 6 * time.Hour
@@ -340,7 +354,7 @@ type index struct {
 
 func cachePath() string {
 	d, _ := os.UserCacheDir()
-	return filepath.Join(d, "claudes", "index-v6.json")
+	return filepath.Join(d, "claudes", "index-v7.json")
 }
 
 func keep(s *Session) bool {

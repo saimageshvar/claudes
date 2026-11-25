@@ -1,11 +1,11 @@
   ✦ claudes   All 9   Today 5   This week 8   Worktrees 3    ☐ Side·Hdl·Orc 0                               enter resume  esc clear / quit  
  ❯ auth tok                                                                                                                        1–1 of 1 
  ▌ ● Fix token refresh race in auth middleware          2m ago   ╭─ preview ──────────────────────────────────────────────────────────────╮ 
- ▌    chronus-api  feat/auth-refresh  wt auth-refresh  48 msgs   │ Fix token refresh race in auth middleware                              │ 
+ ▌    chronus-api  feat/auth-refresh  wt auth-re… 48 msgs · 0B   │ Fix token refresh race in auth middleware                              │ 
                                                                  │                                                                        │ 
                                                                  │  chronus-api  feat/auth-refresh  wt auth-refresh                       │ 
                                                                  │ ~/code/chronus-api.worktrees/auth-refresh                              │ 
-                                                                 │ 48 msgs · started Wed Oct 28, 7:12 AM                                  │ 
+                                                                 │ 48 msgs · 0B · started Wed Oct 28, 7:12 AM                             │ 
                                                                  │  how it started                                                ↓ newer │ 
                                                                  │       ╭ you · Oct 28 7:12 AM ────────────────────────────────────────╮ │ 
                                                                  │       │ Users get logged out when two tabs refresh at the same time. │ │ 

@@ -2,31 +2,31 @@
  ❯ search title, folder, branch, or anything said                                                                                  1–9 of 9 
   Today ──────────────────────────────────────────────────────   ╭─ preview ──────────────────────────────────────────────────────────────╮ 
  ▌ ● Fix token refresh race in auth middleware          2m ago   │ Fix token refresh race in auth middleware                              │ 
- ▌    chronus-api  feat/auth-refresh  wt auth-refresh  48 msgs   │                                                                        │ 
+ ▌    chronus-api  feat/auth-refresh  wt auth-re… 48 msgs · 0B   │                                                                        │ 
                                                                  │  chronus-api  feat/auth-refresh  wt auth-refresh                       │ 
    ● Migrate mentoring-match job to queue workers      41m ago   │ ~/code/chronus-api.worktrees/auth-refresh                              │ 
-      chronus-api  main [primary]                     112 msgs   │ 48 msgs · started Wed Oct 28, 7:12 AM                                  │ 
+      chronus-api  main [primary]                112 msgs · 0B   │ 48 msgs · 0B · started Wed Oct 28, 7:12 AM                             │ 
                                                                  │  how it started                                                        │ 
    ● Archie chat: streaming render jank                 1h ago   │       ╭ you · Oct 28 7:12 AM ────────────────────────────────────────╮ │ 
-      chronus-web  fix/chat-stream  wt chat-stream     27 msgs   │       │ Users get logged out when two tabs refresh at the same time. │ │ 
+      chronus-web  fix/chat-stream  wt chat-stre… 27 msgs · 0B   │       │ Users get logged out when two tabs refresh at the same time. │ │ 
                                                                  │       │ Find out why the refresh token is reused and fix it without  │ │ 
    ● Write fuzzy-search TUI spec                        3h ago   │       │ changing the session cookie format.                          │ │ 
-      claudes                                          19 msgs   │       ╰──────────────────────────────────────────────────────────────╯ │ 
+      claudes                                     19 msgs · 0B   │       ╰──────────────────────────────────────────────────────────────╯ │ 
                                                                  │                                                                        │ 
    ● Investigate flaky e2e: program-join.spec           5h ago   │ ╭ claude · Oct 28 7:12 AM ─────────────────────────────────────╮       │ 
-      chronus-web  test/stabilize-e2e [primary]        64 msgs   │ │ Reproduced it: both tabs call refresh() within the same tick │       │ 
+      chronus-web  test/stabilize-e2e [primary]   64 msgs · 0B   │ │ Reproduced it: both tabs call refresh() within the same tick │       │ 
   Yesterday ──────────────────────────────────────────────────   │ │ and the second one sends the already-rotated token. Next I   │       │ 
    ● Terraform: bump RDS to 16                          1d ago   │ │ will look at how the refresh promise is cached.              │       │ 
-      prod  main                                       33 msgs   │ ╰──────────────────────────────────────────────────────────────╯       │ 
+      prod  main                                  33 msgs · 0B   │ ╰──────────────────────────────────────────────────────────────╯       │ 
                                                                  │                                                                        │ 
    ● Explain webhook retry backoff                      1d ago   │                                                                        │ 
-      chronus-api  main [primary]                        1 msg   │                                                                        │ 
+      chronus-api  main [primary]                   1 msg · 0B   │                                                                        │ 
   This week ──────────────────────────────────────────────────   │                                                                        │ 
    ● Review PR 2841: mentor availability with a delib…  4d ago   │  latest                                                                │ 
-      chronus-web  feat/availability-and-a-very-long-… 41 msgs   │                                                                        │ 
+      chronus-web  feat/availability-and-a-very-… 41 msgs · 0B   │                                                                        │ 
   Older ──────────────────────────────────────────────────────   │                                                                        │ 
    ● Old notes                                          5w ago   │                                                                        │ 
-      notes                                             3 msgs   │                                                                        │ 
+      notes                                        3 msgs · 0B   │                                                                        │ 
                                                                  │                                                                        │ 
                                                                  │                                                                        │ 
                                                                  │                                                                        │ 

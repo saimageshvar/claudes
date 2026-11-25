@@ -168,6 +168,6 @@ func rowLines(it item, w int, sel bool, at time.Time) []string {
 	if s.InTx {
 		l2 = append(l2, sp("  ", sFg), sp("in transcript", sCyan))
 	}
-	r2 := []span{sp(msgs(s.Msgs), sDim), sp(" ", sFg)}
+	r2 := []span{sp(msgs(s.Msgs)+" · "+humanSize(s.Size), sDim), sp(" ", sFg)}
 	return []string{line(w, bg, l1, r1), line(w, bg, l2, r2)}
 }

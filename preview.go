@@ -141,7 +141,7 @@ func previewTop(s *Session, tw int) []string {
 	return append(out,
 		cardRow(tw, tags(s)),
 		cardRow(tw, []span{sp(short(s.Cwd), sDim)}),
-		cardRow(tw, []span{sp(msgs(s.Msgs), sFg), sp(" · ", sDim), sp("started ", sDim), sp(s.Started.Local().Format("Mon Jan 2, 3:04 PM"), sFg)}))
+		cardRow(tw, []span{sp(msgs(s.Msgs), sFg), sp(" · ", sDim), sp(humanSize(s.Size), sFg), sp(" · ", sDim), sp("started ", sDim), sp(s.Started.Local().Format("Mon Jan 2, 3:04 PM"), sFg)}))
 }
 
 // card wraps the interior lines in a rounded border with " preview " set into the top edge; exactly w×h cells.
